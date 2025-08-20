@@ -438,7 +438,7 @@ class SincroniaController {
         baseUrl: url,
         endpoint: 'pedidos',
         timeoutSeconds: 120,
-        fromMap: Venda.fromMap,
+        fromMap: Venda.fromMapAPI,
         headers: {'Connection': 'Keep-Alive'},
         queryParams: {
           'datainicial': DateFormat('ddMMyyyy').format(dataInicio),

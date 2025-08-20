@@ -411,7 +411,7 @@ class _SincronizarPageState extends State<SincronizarPage>
                       children: [
                         const Icon(
                           Icons.cloud_sync,
-                          color: AppColors.highlight,
+                          color: AppColors.lightHighlight,
                           size: 100,
                         ),
                         AnimatedBuilder(
@@ -489,8 +489,8 @@ class _SincronizarPageState extends State<SincronizarPage>
                           Text(
                             style: TextStyle(
                                 color: primeiraSincronia || sincronizando
-                                    ? AppColors.darkDisabledText
-                                    : AppColors.darkPrimaryText),
+                                    ? AppColors.lightDisabledText
+                                    : AppColors.lightPrimaryText),
                             'Sincronia Completa',
                           ),
                         ],

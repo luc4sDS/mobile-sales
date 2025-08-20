@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 
 class AppTheme {
   static final lightTheme = ThemeData(
-    appBarTheme:
-        AppBarTheme(backgroundColor: AppColors.lightSecondaryBackground),
+    appBarTheme: const AppBarTheme(
+      systemOverlayStyle:
+          SystemUiOverlayStyle(statusBarIconBrightness: Brightness.dark),
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
+    ),
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.lightBackground,
     brightness: Brightness.light,
     fontFamily: 'Poppins',
+    cardTheme: const CardTheme(
+      color: AppColors.lightSecondaryBackground,
+      shape: ContinuousRectangleBorder(
+          borderRadius: BorderRadius.all(Radius.circular(20))),
+    ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.lighSecondaryText,
@@ -33,25 +42,30 @@ class AppTheme {
       selectionColor: AppColors.grey.withOpacity(0.5),
     ),
     inputDecorationTheme: const InputDecorationTheme(
+      isDense: true,
       fillColor: AppColors.lightInputBg,
       filled: true,
-      floatingLabelStyle: TextStyle(color: AppColors.primary),
-      enabledBorder: InputBorder.none,
+      floatingLabelStyle: TextStyle(color: AppColors.lighSecondaryText),
+      enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.all(
+            Radius.circular(8),
+          ),
+          borderSide: BorderSide(color: AppColors.lightBorderBg)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(3),
+          Radius.circular(8),
         ),
-        borderSide: BorderSide(color: AppColors.primary, width: 1.5),
+        borderSide: BorderSide(color: AppColors.lighSecondaryText, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(3),
+          Radius.circular(8),
         ),
         borderSide: BorderSide(color: Colors.red, width: 1.5),
       ),
       focusedErrorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.all(
-          Radius.circular(3),
+          Radius.circular(8),
         ),
         borderSide: BorderSide(color: Colors.red, width: 1.5),
       ),
@@ -64,6 +78,20 @@ class AppTheme {
           return AppColors.primary;
         }
       }),
+      checkColor: WidgetStateProperty.resolveWith(
+        (states) {
+          if (!states.contains(WidgetState.selected)) {
+            return null;
+          } else {
+            return Colors.white;
+          }
+        },
+      ),
+    ),
+    progressIndicatorTheme: const ProgressIndicatorThemeData(
+      // circularTrackColor: AppColors.darkSecondaryBackground,
+      color: AppColors.primary,
+      circularTrackColor: AppColors.lightSecondaryBackground,
     ),
   );
 
@@ -152,7 +180,7 @@ class AppTheme {
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
         // circularTrackColor: AppColors.darkSecondaryBackground,
-        color: AppColors.highlight,
+        color: AppColors.darkHighlight,
         circularTrackColor: AppColors.darkSecondaryBackground),
   );
 }

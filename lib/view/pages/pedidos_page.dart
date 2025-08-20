@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
+import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_sales/view/widgets/venda_card.dart';
 
 class PedidosPage extends StatefulWidget {
   const PedidosPage({super.key});
@@ -64,50 +66,20 @@ class _PedidosPageState extends State<PedidosPage> {
 
           return Padding(
             padding: const EdgeInsets.all(16.0),
-            child: RefreshIndicator(
-              onRefresh: () async {
-                setState(() {
-                  _vendasFuture = vendaCtr.getVendas();
-                });
-                await _vendasFuture;
+            child: ListView.builder(
+              itemCount: vendas.length,
+              itemBuilder: (context, index) {
+                final venda = vendas[index];
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
+                  child: VendaCard(
+                      id: venda.vndId,
+                      cliente: venda.vndCliNome,
+                      emissao: venda.vndDataHora,
+                      total: venda.vndTotal,
+                      situacao: venda.vndEnviado),
+                );
               },
-              child: ListView.builder(
-                itemCount: vendas.length,
-                itemBuilder: (context, index) {
-                  final venda = vendas[index];
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(13, 7, 10, 13),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pedido #${venda.vndId}',
-                            style: Theme.of(context).textTheme.titleMedium,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Cliente: ${venda.vndCliNome}',
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Data: ${DateFormat('dd/MM/yyyy - HH:mm').format(venda.vndDataHora)}',
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Total: R\$ ${venda.vndTotal.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
             ),
           );
         },

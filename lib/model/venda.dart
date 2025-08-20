@@ -238,6 +238,65 @@ class Venda {
     );
   }
 
+  factory Venda.fromMapAPI(Map<String, dynamic> map) {
+    return Venda(
+      vndId: map['VND_ID'] as int,
+      vndChave: map['VND_CHAVE'] as String?,
+      vndDataHora: Utils().parseDateFlexivel(map['VND_DATAHORA'] as String),
+      vndPrevent: map['VND_PREVENT'] != null
+          ? DateFormat('MM-dd-yyyy').parse(map['VND_PREVENT'] as String)
+          : null,
+      vndVend: map['VND_VEND'] as int,
+      vndVendNome: map['VND_VENDNOME'] as String,
+      vndCliCnpj: map['VND_CLI_CNPJ'] as String?,
+      vndCliNome: map['VND_CLI_NOME'] as String,
+      vndCliFant: map['VND_CLI_FANT'] as String?,
+      vndFormaPagto: map['VND_FORMAPAGTO'] as int?,
+      vndFormaNome: map['VND_FORMANOME'] as String?,
+      vndMeio: map['VND_MEIO'] as int?,
+      vndMeioNome: map['VND_MEIONOME'] as String?,
+      vndValor: (map['VND_VALOR'] as num).toDouble(),
+      vndDesconto: (map['VND_DESCONTO'] as num?)?.toDouble() ?? 0,
+      vndFrete: (map['VND_FRETE'] as num?)?.toDouble() ?? 0,
+      vndTotalSt: (map['VND_TOTALST'] as num?)?.toDouble() ?? 0,
+      vndTotalIpi: (map['VND_TOTALIPI'] as num?)?.toDouble() ?? 0,
+      vndTotal: (map['VND_TOTAL'] as num).toDouble(),
+      vndObs: map['VND_OBS'] as String?,
+      vndEnviado: map['VND_SITUACAO'] as String? ?? 'C',
+      vndPeso: (map['VND_PESO'] as num?)?.toDouble() ?? 0,
+      vndEntrega: map['VND_ENTREGA'] as int?,
+      vndNEntrega: map['VND_NENTREGA'] as String?,
+      vndLatitude: (map['VND_LATITUDE'] as num?)?.toDouble(),
+      vndLongitude: (map['VND_LONGITUDE'] as num?)?.toDouble(),
+      vndTabela: map['VND_TABELA'] as int?,
+      vndUf: map['VND_UF'] as String?,
+      vndCidade: map['VND_CIDADE'] as String?,
+      vndEnderecoEnt: map['VND_ENDERECOENT'] as String?,
+      vndNumeroEnt: map['VND_NUMEROENT'] as String?,
+      vndBairroEnt: map['VND_BAIRROENT'] as String?,
+      vndCidadeEnt: map['VND_CIDADEENT'] as String?,
+      vndEstadoEnt: map['VND_ESTADOENT'] as String?,
+      vndCepEnt: map['VND_CEPENT'] as String?,
+      vndComplEnt: map['VND_COMPLENT'] as String?,
+      vndEmail: map['VND_EMAIL'] as String?,
+      vndPrAcrescimo: (map['VND_PRACRESCIMO'] as num?)?.toDouble() ?? 0,
+      vndPrDesconto: (map['VND_PRDESCONTO'] as num?)?.toDouble() ?? 0,
+      vndCliCod: (map['VND_CLI_COD'] as int?) ?? 0,
+      vndSincronia: map['VND_SINCRONIA'] as String?,
+      vndAtualizacao: map['VND_ATUALIZACAO'] != null
+          ? Utils().parseDateFlexivel(map['VND_ATUALIZACAO'] as String)
+          : null,
+      vndParcelas: map['VND_PARCELAS'] as int?,
+      vndTotalBonificacao:
+          (map['VND_TOTALBONIFICACAO'] as num?)?.toDouble() ?? 0,
+      vndSaldoBonificacao:
+          (map['VND_SALDOBONIFICACAO'] as num?)?.toDouble() ?? 0,
+      itens: map['ITENS'] != null
+          ? (map['ITENS'] as List).map((i) => VendaItem.fromMap(i)).toList()
+          : [], // Mapeia os itens se existirem
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'VND_ID': vndId,
