@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda.dart';
-import 'package:intl/intl.dart';
 import 'package:mobile_sales/view/pages/pedido_info_page.dart';
 import 'package:mobile_sales/view/widgets/venda_card.dart';
+import 'package:mobile_sales/view/widgets/venda_situacao_toggle.dart';
 
 class PedidosPage extends StatefulWidget {
   const PedidosPage({super.key});
@@ -38,6 +38,19 @@ class _PedidosPageState extends State<PedidosPage> {
         _vendasFuture =
             vendaCtr.getVendas(pesquisa: _pesquisaCtr.text, filtros: _filtros);
       });
+    });
+  }
+
+  void handleSituToggleTap(String situ) {
+    setState(() {
+      if (_filtros.contains(situ)) {
+        _filtros.remove(situ);
+      } else {
+        _filtros.add(situ);
+      }
+
+      _vendasFuture =
+          vendaCtr.getVendas(pesquisa: _pesquisaCtr.text, filtros: _filtros);
     });
   }
 
@@ -97,12 +110,30 @@ class _PedidosPageState extends State<PedidosPage> {
                 ),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  child: Row(
-                    children: [Text('aberto'), Text('enviado')],
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                  ),
                   curve: Curves.ease,
                   height: _filtrosContainerHeight,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      VendaSituacaoToggle(
+                        situ: 'Aberto',
+                        estado: _filtros.contains('N'),
+                        onTap: () => handleSituToggleTap('N'),
+                      ),
+                      const SizedBox(width: 5),
+                      VendaSituacaoToggle(
+                        situ: 'Enviado',
+                        estado: _filtros.contains('P'),
+                        onTap: () => handleSituToggleTap('P'),
+                      ),
+                      const SizedBox(width: 5),
+                      VendaSituacaoToggle(
+                        situ: 'Cancelado',
+                        estado: _filtros.contains('C'),
+                        onTap: () => handleSituToggleTap('C'),
+                      ),
+                    ],
+                  ),
                 )
               ],
             ),
@@ -162,6 +193,8 @@ class _PedidosPageState extends State<PedidosPage> {
                           emissao: venda.vndDataHora,
                           total: venda.vndTotal,
                           situacao: venda.vndEnviado,
+                          estado: venda.vndUf ?? '',
+                          cidade: venda.vndCidade ?? '',
                           handleTap: () {
                             Navigator.push(
                               context,

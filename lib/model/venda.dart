@@ -270,7 +270,7 @@ class Venda {
       vndLongitude: (map['VND_LONGITUDE'] as num?)?.toDouble(),
       vndTabela: map['VND_TABELA'] as int?,
       vndUf: map['VND_UF'] as String?,
-      vndCidade: map['VND_CIDADE'] as String?,
+      vndCidade: map['VND_CIDADEENT'] as String?,
       vndEnderecoEnt: map['VND_ENDERECOENT'] as String?,
       vndNumeroEnt: map['VND_NUMEROENT'] as String?,
       vndBairroEnt: map['VND_BAIRROENT'] as String?,

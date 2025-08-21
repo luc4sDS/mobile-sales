@@ -28,17 +28,18 @@ class VendasController {
       where = 'vnd_id=? AND vnd_enviado in ($filtrosMacro)';
     } else {
       where =
-          "UPPER(vnd_cli_nome) LIKE UPPER(?) AND vnd_enviado in ($filtrosMacro)";
+          "(UPPER(vnd_cli_nome) LIKE UPPER(?) OR UPPER(vnd_cidade) like UPPER(?)) AND vnd_enviado in ($filtrosMacro)";
     }
 
     var dados = await db.query('VENDAS',
         orderBy: orderBy,
         where: where,
-        whereArgs: [
-          isNumeric
-              ? double.tryParse(pesquisa)
-              : "%${pesquisa.replaceAll(' ', '%')}%"
-        ]);
+        whereArgs: isNumeric
+            ? [double.tryParse(pesquisa)]
+            : [
+                "%${pesquisa.replaceAll(' ', '%')}%",
+                "%${pesquisa.replaceAll(' ', '%')}%"
+              ]);
 
     _vendas = dados.map((json) => Venda.fromMap(json)).toList();
     return _vendas;

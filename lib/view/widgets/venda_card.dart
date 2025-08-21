@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_sales/view/widgets/venda_situacao_chip.dart';
 
 class VendaCard extends StatelessWidget {
   final int id;
   final String cliente;
+  final String cidade;
+  final String estado;
   final DateTime emissao;
   final double total;
   final String situacao;
   final void Function() handleTap;
 
-  const VendaCard(
-      {super.key,
-      required this.id,
-      required this.cliente,
-      required this.emissao,
-      required this.total,
-      required this.situacao,
-      required this.handleTap});
+  const VendaCard({
+    super.key,
+    required this.id,
+    required this.cliente,
+    required this.emissao,
+    required this.total,
+    required this.situacao,
+    required this.handleTap,
+    required this.estado,
+    required this.cidade,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -55,40 +61,15 @@ class VendaCard extends StatelessWidget {
                   )
                 ]),
                 Text(
-                  DateFormat('dd/MM/yyyy').format(emissao),
+                  '${DateFormat('dd/MM/yyyy').format(emissao)} - $estado, $cidade',
                   style: const TextStyle(color: AppColors.lighSecondaryText),
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: situacao == 'N'
-                              ? AppColors.lightAbertoBg
-                              : situacao == 'P'
-                                  ? AppColors.lightEnviadoBg
-                                  : AppColors.lightCanceladoBg,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(5),
-                          ),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(4, 1, 4, 1),
-                          child: Text(
-                            situacao == 'N'
-                                ? 'ABERTO'
-                                : situacao == 'P'
-                                    ? 'ENVIADO'
-                                    : 'CANCELADO',
-                            style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                color: situacao == 'N'
-                                    ? AppColors.lightAbertoText
-                                    : situacao == 'P'
-                                        ? AppColors.lightEnviadoText
-                                        : AppColors.lightCanceladoText),
-                          ),
-                        ),
+                      VendaSituacaoChip(
+                        situacao: situacao,
                       ),
                       Text('R\$ ${total.toStringAsFixed(2)}')
                     ])

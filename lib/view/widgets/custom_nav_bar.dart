@@ -29,7 +29,7 @@ class CustomNavBar extends StatelessWidget {
           rippleColor: Colors.grey[300]!,
           hoverColor: Colors.grey[100]!,
           gap: 8,
-          activeColor: isDark ? Colors.white : AppColors.primary,
+          activeColor: isDark ? Colors.white : AppColors.lightPrimaryText,
           iconSize: 24,
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
           duration: const Duration(milliseconds: 400),

@@ -68,7 +68,7 @@ class _LoginPageState extends State<LoginPage> {
     if (dataSinc.isBefore(DateTime.now()) && await Utils.internet()) {
       Navigator.pushNamed(context, '/sincronizar');
     } else {
-      Navigator.pushReplacementNamed(context, '/main');
+      Navigator.pushNamed(context, '/main');
     }
 
     setState(() {
