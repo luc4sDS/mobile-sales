@@ -6,21 +6,40 @@ class VendasController {
   List<Venda> get vendas => _vendas;
 
   Future<List<Venda>> getVendas(
-      {String orderBy = '',
+      {String orderBy = 'vnd_datahora desc',
       List<String> filtros = const [],
       String pesquisa = ''}) async {
-    var where = "";
-    where = double.tryParse(pesquisa) != null
-        ? "VND_ID=?"
-        : "UPPER(VND_CLI_NOME) LIKE UPPER(?)";
-
     final db = await DatabaseService().database;
-    var dados =
-        await db.query('VENDAS', orderBy: orderBy, where: where, whereArgs: [
-      double.tryParse(pesquisa) == null
-          ? pesquisa
-          : '%${pesquisa.replaceAll(" ", "%")}%'
-    ]);
+    String where;
+    final isNumeric = double.tryParse(pesquisa) != null;
+
+    if (filtros.isEmpty) {
+      filtros = ['N', 'C', 'P'];
+    }
+
+    List<String> quotedFiltros = [];
+    for (var s in filtros) {
+      quotedFiltros.add("'$s'");
+    }
+
+    final filtrosMacro = quotedFiltros.join(',');
+
+    if (isNumeric) {
+      where = 'vnd_id=? AND vnd_enviado in ($filtrosMacro)';
+    } else {
+      where =
+          "UPPER(vnd_cli_nome) LIKE UPPER(?) AND vnd_enviado in ($filtrosMacro)";
+    }
+
+    var dados = await db.query('VENDAS',
+        orderBy: orderBy,
+        where: where,
+        whereArgs: [
+          isNumeric
+              ? double.tryParse(pesquisa)
+              : "%${pesquisa.replaceAll(' ', '%')}%"
+        ]);
+
     _vendas = dados.map((json) => Venda.fromMap(json)).toList();
     return _vendas;
   }

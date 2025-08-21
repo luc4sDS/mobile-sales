@@ -38,9 +38,9 @@ class AppTheme {
       ),
     ),
     textSelectionTheme: TextSelectionThemeData(
-      cursorColor: AppColors.primary,
-      selectionColor: AppColors.grey.withOpacity(0.5),
-    ),
+        cursorColor: AppColors.primary,
+        selectionColor: AppColors.grey.withOpacity(0.5),
+        selectionHandleColor: AppColors.primary),
     inputDecorationTheme: const InputDecorationTheme(
       isDense: true,
       fillColor: AppColors.lightInputBg,
