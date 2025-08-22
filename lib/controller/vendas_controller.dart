@@ -1,3 +1,4 @@
+import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/venda.dart';
 
@@ -6,9 +7,11 @@ class VendasController {
   List<Venda> get vendas => _vendas;
 
   Future<List<Venda>> getVendas(
-      {String orderBy = 'vnd_datahora desc',
+      {String orderBy =
+          "(case vnd_enviado when 'N' then 1 when 'P' then 2 else 3 end) asc, vnd_datahora desc",
       List<String> filtros = const [],
       String pesquisa = ''}) async {
+    final vendaItensCtr = VendasItensController();
     final db = await DatabaseService().database;
     String where;
     final isNumeric = double.tryParse(pesquisa) != null;

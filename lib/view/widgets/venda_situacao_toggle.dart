@@ -26,7 +26,7 @@ class VendaSituacaoToggle extends StatelessWidget {
                   ? AppColors.primary
                   : AppColors.lightSecondaryBackground),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(6, 3, 6, 3),
+            padding: const EdgeInsets.fromLTRB(8, 5, 8, 5),
             child: Text(
               situ,
               style: TextStyle(

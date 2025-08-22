@@ -281,7 +281,7 @@ class Venda {
       vndEmail: map['VND_EMAIL'] as String?,
       vndPrAcrescimo: (map['VND_PRACRESCIMO'] as num?)?.toDouble() ?? 0,
       vndPrDesconto: (map['VND_PRDESCONTO'] as num?)?.toDouble() ?? 0,
-      vndCliCod: (map['VND_CLI_COD'] as int?) ?? 0,
+      vndCliCod: (map['VND_CLI_CODIGO'] as int?) ?? 0,
       vndSincronia: map['VND_SINCRONIA'] as String?,
       vndAtualizacao: map['VND_ATUALIZACAO'] != null
           ? Utils().parseDateFlexivel(map['VND_ATUALIZACAO'] as String)

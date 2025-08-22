@@ -86,7 +86,7 @@ class VendaItem {
       vdiObs: map['VDI_OBS'] as String?,
       vdiPbonificacao: (map['VDI_PBONIFICACAO'] as num?)?.toDouble() ?? 0,
       vdiVbonificacao: (map['VDI_VBONIFICACAO'] as num?)?.toDouble() ?? 0,
-      vdiBonificado: map['VDI_BONIFICADO'] as bool,
+      vdiBonificado: (map['VDI_BONIFICADO'] as int) == 1,
       vdiLance: map['VDI_LANCE'] as String? ?? 'N',
       vdiPmin: (map['VDI_PMIN'] as num?)?.toDouble() ?? 0,
     );

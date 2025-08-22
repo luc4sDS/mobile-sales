@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
+import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/view/pages/pedido_info_page.dart';
@@ -17,11 +18,11 @@ class PedidosPage extends StatefulWidget {
 
 class _PedidosPageState extends State<PedidosPage> {
   final VendasController vendaCtr = VendasController();
+  final vendaItensCtr = VendasItensController();
   late Future<List<Venda>> _vendasFuture;
   final _pesquisaCtr = TextEditingController();
   Timer? _pesquisaTimer;
-  final List<String> _filtros = [];
-  double? _filtrosContainerHeight = 0;
+  final List<String> _filtros = ['N'];
 
   @override
   void initState() {
@@ -57,7 +58,21 @@ class _PedidosPageState extends State<PedidosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: IconButton(
+        onPressed: () {},
+        icon: const Icon(
+          size: 30,
+          Icons.add,
+          color: Colors.white,
+        ),
+        style: IconButton.styleFrom(
+            backgroundColor: AppColors.primary, padding: EdgeInsets.all(12)),
+      ),
       appBar: AppBar(
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+        ],
+        automaticallyImplyLeading: false,
         title: const Text('Pedidos'),
       ),
       body: Column(
@@ -72,46 +87,10 @@ class _PedidosPageState extends State<PedidosPage> {
                   decoration: const InputDecoration(
                       label: Text('Pesquisar'), suffixIcon: Icon(Icons.search)),
                 ),
-                SizedBox(
-                  height: 5,
+                const SizedBox(
+                  height: 10,
                 ),
-                Row(
-                  children: [
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.fromLTRB(10, 2, 10, 2),
-                        minimumSize: Size(10, 10),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _filtrosContainerHeight =
-                              _filtrosContainerHeight == 0 ? 50 : 0;
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          const Text('Filtros'),
-                          const SizedBox(width: 5),
-                          DecoratedBox(
-                            decoration: const BoxDecoration(
-                              color: AppColors.lightSecondaryBackground,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(5.0),
-                              child: Text(_filtros.length.toString()),
-                            ),
-                          )
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  curve: Curves.ease,
-                  height: _filtrosContainerHeight,
+                Container(
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
@@ -195,12 +174,16 @@ class _PedidosPageState extends State<PedidosPage> {
                           situacao: venda.vndEnviado,
                           estado: venda.vndUf ?? '',
                           cidade: venda.vndCidade ?? '',
-                          handleTap: () {
+                          handleTap: () async {
+                            final vendaCompleta = venda.copyWith(
+                                itens: await vendaItensCtr
+                                    .getVendaItens(venda.vndId));
+
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(
                                   builder: (context) =>
-                                      PedidoInfoPage(venda: venda)),
+                                      PedidoInfoPage(venda: vendaCompleta)),
                             );
                           },
                         ),

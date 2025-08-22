@@ -38,36 +38,30 @@ class AppTheme {
       ),
     ),
     textSelectionTheme: TextSelectionThemeData(
-        cursorColor: AppColors.primary,
-        selectionColor: AppColors.grey.withOpacity(0.5),
-        selectionHandleColor: AppColors.primary),
+      cursorColor: AppColors.primary,
+      selectionColor: AppColors.grey.withValues(alpha: 0.5),
+      selectionHandleColor: AppColors.primary,
+    ),
     inputDecorationTheme: const InputDecorationTheme(
       isDense: true,
-      fillColor: AppColors.lightInputBg,
+      fillColor: AppColors.lightSecondaryBackground,
       filled: true,
       floatingLabelStyle: TextStyle(color: AppColors.lighSecondaryText),
-      enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(8),
-          ),
-          borderSide: BorderSide(color: AppColors.lightBorderBg)),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(color: AppColors.lighSecondaryText, width: 1.5),
+      enabledBorder: UnderlineInputBorder(
+          borderRadius: BorderRadius.all(Radius.circular(6)),
+          borderSide: BorderSide(color: Colors.transparent)),
+      focusedBorder: UnderlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderSide: BorderSide(color: Colors.transparent, width: 1.5),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(color: Colors.red, width: 1.5),
+      errorBorder: UnderlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderSide: BorderSide(color: Colors.transparent, width: 1.5),
       ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.all(
-          Radius.circular(8),
-        ),
-        borderSide: BorderSide(color: Colors.red, width: 1.5),
+      focusedErrorBorder: UnderlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderSide: BorderSide(color: Colors.transparent, width: 1.5),
+        // ),
       ),
     ),
     checkboxTheme: CheckboxThemeData(
@@ -96,7 +90,7 @@ class AppTheme {
   );
 
   static final darkTheme = ThemeData(
-    appBarTheme: AppBarTheme(backgroundColor: Colors.transparent),
+    appBarTheme: const AppBarTheme(backgroundColor: Colors.transparent),
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: AppColors.darkBackground,
     brightness: Brightness.dark,
@@ -127,7 +121,7 @@ class AppTheme {
     textSelectionTheme: TextSelectionThemeData(
       cursorColor: Colors.white,
       selectionHandleColor: Colors.white,
-      selectionColor: AppColors.grey.withOpacity(0.5),
+      selectionColor: AppColors.grey.withValues(alpha: 0.5),
     ),
     inputDecorationTheme: const InputDecorationTheme(
       isDense: true,
