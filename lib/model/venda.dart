@@ -292,7 +292,7 @@ class Venda {
       vndSaldoBonificacao:
           (map['VND_SALDOBONIFICACAO'] as num?)?.toDouble() ?? 0,
       itens: map['ITENS'] != null
-          ? (map['ITENS'] as List).map((i) => VendaItem.fromMap(i)).toList()
+          ? (map['ITENS'] as List).map((i) => VendaItem.fromMapAPI(i)).toList()
           : [], // Mapeia os itens se existirem
     );
   }

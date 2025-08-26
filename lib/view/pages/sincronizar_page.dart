@@ -85,9 +85,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     });
 
     final resultDownload = await sinc.baixarRegistros(
-        params.parametros!.parEndIPProd!,
-        params.parametros!.parCusu!,
-        params.parametros!.ultsincroniaAsDateTime!);
+      params.parametros!.parEndIPProd!,
+      params.parametros!.parCusu!,
+      params.parametros!.ultsincroniaAsDateTime!,
+    );
 
     if (resultDownload != '') {
       Utils().customShowDialog('ERRO', 'Erro!', resultDownload, context);

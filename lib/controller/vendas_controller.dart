@@ -11,7 +11,6 @@ class VendasController {
           "(case vnd_enviado when 'N' then 1 when 'P' then 2 else 3 end) asc, vnd_datahora desc",
       List<String> filtros = const [],
       String pesquisa = ''}) async {
-    final vendaItensCtr = VendasItensController();
     final db = await DatabaseService().database;
     String where;
     final isNumeric = double.tryParse(pesquisa) != null;

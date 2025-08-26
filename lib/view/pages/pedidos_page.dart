@@ -175,15 +175,11 @@ class _PedidosPageState extends State<PedidosPage> {
                           estado: venda.vndUf ?? '',
                           cidade: venda.vndCidade ?? '',
                           handleTap: () async {
-                            final vendaCompleta = venda.copyWith(
-                                itens: await vendaItensCtr
-                                    .getVendaItens(venda.vndId));
-
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(
                                   builder: (context) =>
-                                      PedidoInfoPage(venda: vendaCompleta)),
+                                      PedidoInfoPage(venda: venda)),
                             );
                           },
                         ),

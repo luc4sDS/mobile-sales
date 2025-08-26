@@ -167,7 +167,7 @@ class ParametrosController {
       parametros!.parVendNome = resJson[0]['VR_NOME'];
       parametros!.parVersao = 22;
       parametros!.parLimiteDesconto = 0;
-      parametros!.ultsincroniaAsDateTime = DateTime(2025, 6, 30, 0, 0, 0);
+      parametros!.ultsincroniaAsDateTime = DateTime(2020, 1, 1, 0, 0, 0);
 
       var result = await atualizarDadosVendedor();
       if (result.isNotEmpty) return result;

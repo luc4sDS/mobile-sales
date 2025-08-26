@@ -64,6 +64,15 @@ class AppTheme {
         // ),
       ),
     ),
+    dropdownMenuTheme: DropdownMenuThemeData(
+        inputDecorationTheme: const InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.lightSecondaryBackground,
+          // isDense: true,
+        ),
+        menuStyle: MenuStyle(
+            backgroundColor: WidgetStateProperty.resolveWith(
+                (state) => AppColors.lightBackground))),
     checkboxTheme: CheckboxThemeData(
       fillColor: WidgetStateProperty.resolveWith((states) {
         if (!states.contains(WidgetState.selected)) {

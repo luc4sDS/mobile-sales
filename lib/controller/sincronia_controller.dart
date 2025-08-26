@@ -67,7 +67,7 @@ class SincroniaController {
     Map<String, dynamic> queryParams = const {},
     Map<String, dynamic> headers = const {},
     Dio? dioInstance,
-    int timeoutSeconds = 60,
+    int timeoutSeconds = 240,
     bool normalizeKeys = true,
     bool Function(Map<String, dynamic>)? filter,
     Function(int, int)? onProgress,
@@ -339,7 +339,7 @@ class SincroniaController {
 
     var resultMeiosPag = await baixarDados<MeioPagamento>(
         baseUrl: url,
-        endpoint: 'formas_pagamento',
+        endpoint: 'meios_pagamento',
         filter: (item) => item['MP_ID'] != null,
         fromMap: MeioPagamento.fromMap,
         queryParams: {

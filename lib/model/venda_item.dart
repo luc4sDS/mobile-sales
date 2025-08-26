@@ -92,6 +92,39 @@ class VendaItem {
     );
   }
 
+  factory VendaItem.fromMapAPI(Map<String, dynamic> map) {
+    return VendaItem(
+      vdiId: map['VDI_ID'] as int?,
+      vdiVndId: map['VDI_VND_ID'] as int,
+      vdiVndChave: map['VDI_VND_CHAVE'] as String?,
+      vdiEan: map['VDI_EAN'] as int?,
+      vdiProdCod: map['VDI_PROD_COD'] as int,
+      vdiDescricao: map['VDI_DESCRICAO'] as String,
+      vdiTipo: map['VDI_TIPO'] as String? ?? 'P',
+      vdiQtd: (map['VDI_QTD'] as num).toDouble(),
+      vdiUnit: (map['VDI_UNIT'] as num).toDouble(),
+      vdiTotal: (map['VDI_TOTAL'] as num).toDouble(),
+      vdiDesc: (map['VDI_DESC'] as num?)?.toDouble() ?? 0,
+      vdiAlintra: (map['VDI_ALINTRA'] as num?)?.toDouble() ?? 0,
+      vdiAlinter: (map['VDI_ALINTER'] as num?)?.toDouble() ?? 0,
+      vdiAlipi: (map['VDI_ALIPI'] as num?)?.toDouble() ?? 0,
+      vdiMva: (map['VDI_MVA'] as num?)?.toDouble() ?? 0,
+      vdiRedbase: (map['VDI_REDBASE'] as num?)?.toDouble() ?? 0,
+      vdiVlst: (map['VDI_VLST'] as num?)?.toDouble() ?? 0,
+      vdiVlipi: (map['VDI_VLIPI'] as num?)?.toDouble() ?? 0,
+      vdiTotalg: (map['VDI_TOTALG'] as num).toDouble(),
+      vdiPreco: (map['VDI_PRECO'] as num).toDouble(),
+      vdiPeso: (map['VDI_PESO'] as num?)?.toDouble() ?? 0,
+      vdiCusto: (map['VDI_CUSTO'] as num?)?.toDouble() ?? 0,
+      vdiObs: map['VDI_OBS'] as String?,
+      vdiPbonificacao: (map['VDI_PBONIFICACAO'] as num?)?.toDouble() ?? 0,
+      vdiVbonificacao: (map['VDI_VBONIFICACAO'] as num?)?.toDouble() ?? 0,
+      vdiBonificado: map['VDI_BONIFICADO'] as bool,
+      vdiLance: map['VDI_LANCE'] as String? ?? 'N',
+      vdiPmin: (map['VDI_PMIN'] as num?)?.toDouble() ?? 0,
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'VDI_ID': vdiId,

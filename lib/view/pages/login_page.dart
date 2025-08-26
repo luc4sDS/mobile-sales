@@ -10,6 +10,7 @@ import 'package:mobile_sales/model/cliente.dart';
 import 'package:mobile_sales/model/cliente_contato.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/utils/utils.dart';
+import 'package:sqflite/sqflite.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
