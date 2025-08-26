@@ -36,7 +36,10 @@ class VendaItemCard extends StatelessWidget {
               children: [
                 Text(
                   vdiProdId.toString(),
-                  style: const TextStyle(fontWeight: FontWeight.w500),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.primary,
+                  ),
                 ),
                 const Text(' • '),
                 Expanded(

@@ -59,7 +59,9 @@ class _PedidosPageState extends State<PedidosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       floatingActionButton: IconButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.pushNamed(context, '/novo_pedido');
+        },
         icon: const Icon(
           size: 30,
           Icons.add,
@@ -69,6 +71,7 @@ class _PedidosPageState extends State<PedidosPage> {
             backgroundColor: AppColors.primary, padding: EdgeInsets.all(12)),
       ),
       appBar: AppBar(
+        centerTitle: false,
         actions: [
           IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
         ],

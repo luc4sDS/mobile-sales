@@ -5,7 +5,7 @@ class CustomAlertDialog extends AlertDialog {
   final String tipo;
   final Widget titulo;
 
-  CustomAlertDialog(
+  const CustomAlertDialog(
       {super.key,
       this.tipo = 'INFO',
       required this.titulo,
@@ -16,14 +16,14 @@ class CustomAlertDialog extends AlertDialog {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      backgroundColor: AppColors.darkSecondaryBackground,
-      titleTextStyle: TextStyle(
+      backgroundColor: AppColors.lightBackground,
+      titleTextStyle: const TextStyle(
           fontSize: 18,
           fontFamily: 'Poppins',
-          color: AppColors.darkPrimaryText),
-      contentTextStyle: TextStyle(
+          color: AppColors.lightPrimaryText),
+      contentTextStyle: const TextStyle(
         fontFamily: 'Poppins',
-        color: AppColors.darkSecondaryText,
+        color: AppColors.lighSecondaryText,
       ),
       title: Row(children: [
         tipo == 'CONFIRMAR'
@@ -53,7 +53,7 @@ class CustomAlertDialog extends AlertDialog {
                   color: Colors.white,
                 ),
               ),
-        SizedBox(width: 20),
+        const SizedBox(width: 20),
         titulo
       ]),
       content: ConstrainedBox(

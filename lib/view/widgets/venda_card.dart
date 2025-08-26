@@ -47,7 +47,8 @@ class VendaCard extends StatelessWidget {
                 Row(children: [
                   Text(
                     id.toString(),
-                    style: const TextStyle(fontWeight: FontWeight.w500),
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w500, color: AppColors.primary),
                   ),
                   const Text(' • '),
                   Expanded(
@@ -61,7 +62,7 @@ class VendaCard extends StatelessWidget {
                   )
                 ]),
                 Text(
-                  '${DateFormat('dd/MM/yyyy').format(emissao)} - $estado, $cidade',
+                  '${DateFormat('dd/MM/yyyy').format(emissao)} - $cidade, $estado',
                   style: const TextStyle(color: AppColors.lighSecondaryText),
                   overflow: TextOverflow.ellipsis,
                 ),

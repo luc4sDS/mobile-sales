@@ -191,7 +191,7 @@ class DatabaseService {
 
         await db.execute('''CREATE TABLE VENDAS (
           VND_ID INTEGER PRIMARY KEY,
-          VND_CHAVE TEXT,
+          VND_CHAVE TEXT UNIQUE,
           VND_DATAHORA TEXT,  -- SQLite usa TEXT para DATETIME
           VND_PREVENT TEXT,   -- SQLite usa TEXT para DATE
           VND_VEND INTEGER,

@@ -1,3 +1,5 @@
+import 'package:mobile_sales/controller/cliente_controller.dart';
+import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/venda.dart';
@@ -45,5 +47,54 @@ class VendasController {
 
     _vendas = dados.map((json) => Venda.fromMap(json)).toList();
     return _vendas;
+  }
+
+  Future<Venda?> getVendaById(int id) async {
+    final db = await DatabaseService().database;
+
+    final res = await db.query('VENDAS', where: 'VND_ID = ?', whereArgs: [id]);
+
+    if (res.isEmpty) {
+      return null;
+    }
+
+    return Venda.fromMap(res[0]);
+  }
+
+  Future<Venda?> novoPedido(int cliId) async {
+    try {
+      final clienteController = ClienteController();
+      final parametrosController = ParametrosController();
+      final cliente = await clienteController.getClienteById(cliId);
+      await parametrosController.getParametros();
+
+      if (cliente == null) {
+        return null;
+      }
+
+      final db = await DatabaseService().database;
+
+      final res = db.insert('VENDAS', {
+        'vnd_datahora': DateTime.now().toIso8601String(),
+        'vnd_enviado': 'N',
+        'vnd_desconto': 0,
+        'vnd_cli_id': cliente.cliId,
+        'vnd_cli_nome': cliente.cliRazao,
+        'vnd_cli_cnpj': cliente.cliCnpj,
+        'vnd_pracrescimo': 0,
+        'vnd_prdesconto': 0,
+        'vnd_valor': 0,
+        'vnd_total': 0,
+        'vnd_totalbonificado': 0,
+        'vnd_saldobonificacao': 0,
+        'vnd_parcelas': 0,
+        'vnd_frete': 0,
+        'vnd_peso': 0,
+        'vnd_vend': parametrosController.parametros?.parCusu
+      });
+    } catch (e) {
+      rethrow;
+      return null;
+    }
   }
 }

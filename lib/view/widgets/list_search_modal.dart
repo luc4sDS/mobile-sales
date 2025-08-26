@@ -3,16 +3,18 @@ import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 
 class ListSearchModal<T> extends StatefulWidget {
   final List<T> data;
-  final String Function(T) extractLabel;
+  final String Function(T) extractName;
   final int selectedIndex;
   final Function(int) onSelect;
+  final String label;
 
   const ListSearchModal({
     super.key,
     required this.data,
-    required this.extractLabel,
+    required this.extractName,
     required this.selectedIndex,
     required this.onSelect,
+    required this.label,
   });
 
   @override
@@ -25,11 +27,11 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
       isScrollControlled: true,
       context: context,
       builder: (context) => ListSearchContainer<T>(
-        data: widget.data,
-        extractLabel: widget.extractLabel,
-        selectedIndex: widget.selectedIndex,
-        onSelect: widget.onSelect,
-      ),
+          data: widget.data,
+          extractName: widget.extractName,
+          selectedIndex: widget.selectedIndex,
+          onSelect: widget.onSelect,
+          label: widget.label),
     );
   }
 
@@ -51,7 +53,7 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
               child: Text(
                 widget.data.isEmpty || widget.selectedIndex == -1
                     ? ''
-                    : widget.extractLabel(widget.data[widget.selectedIndex]),
+                    : widget.extractName(widget.data[widget.selectedIndex]),
                 overflow: TextOverflow.ellipsis,
               ),
             )),
@@ -62,16 +64,18 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
 
 class ListSearchContainer<T> extends StatefulWidget {
   final List<T> data;
-  final String Function(T) extractLabel;
+  final String Function(T) extractName;
   final int selectedIndex;
   final Function(int) onSelect;
+  final String label;
 
   const ListSearchContainer({
     super.key,
     required this.data,
-    required this.extractLabel,
+    required this.extractName,
     required this.selectedIndex,
     required this.onSelect,
+    required this.label,
   });
 
   @override
@@ -111,6 +115,13 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Text(
+                widget.label,
+                style: const TextStyle(fontWeight: FontWeight.w500),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
               TextField(
                 onChanged: (_) => setState(() {}),
                 controller: _pesquisaCte,
@@ -132,7 +143,7 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
                         _currentSelectedRecord = index;
                       });
                     },
-                    child: shouldShow(widget.extractLabel(widget.data[index]))
+                    child: shouldShow(widget.extractName(widget.data[index]))
                         ? Container(
                             decoration: BoxDecoration(
                                 color: index == _currentSelectedRecord
@@ -143,7 +154,7 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: Text(
-                                widget.extractLabel(widget.data[index]),
+                                widget.extractName(widget.data[index]),
                                 style: TextStyle(
                                     color: index == _currentSelectedRecord
                                         ? Colors.white

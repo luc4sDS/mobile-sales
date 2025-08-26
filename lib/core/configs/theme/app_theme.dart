@@ -5,6 +5,7 @@ import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 class AppTheme {
   static final lightTheme = ThemeData(
     appBarTheme: const AppBarTheme(
+      centerTitle: true,
       systemOverlayStyle:
           SystemUiOverlayStyle(statusBarIconBrightness: Brightness.dark),
       scrolledUnderElevation: 0,
