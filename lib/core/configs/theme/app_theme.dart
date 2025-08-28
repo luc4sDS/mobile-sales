@@ -34,7 +34,7 @@ class AppTheme {
         textStyle: const TextStyle(
             fontSize: 18, fontWeight: FontWeight.w500, fontFamily: 'Poppins'),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(50),
         ),
       ),
     ),
@@ -48,9 +48,18 @@ class AppTheme {
       fillColor: AppColors.lightSecondaryBackground,
       filled: true,
       floatingLabelStyle: TextStyle(color: AppColors.lighSecondaryText),
+      disabledBorder: UnderlineInputBorder(
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderSide: BorderSide(
+          color: Colors.transparent,
+        ),
+      ),
       enabledBorder: UnderlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(6)),
-          borderSide: BorderSide(color: Colors.transparent)),
+        borderRadius: BorderRadius.all(Radius.circular(6)),
+        borderSide: BorderSide(
+          color: Colors.transparent,
+        ),
+      ),
       focusedBorder: UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(color: Colors.transparent, width: 1.5),

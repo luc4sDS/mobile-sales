@@ -7,70 +7,76 @@ class VendaItemCard extends StatelessWidget {
   final double vdiQtd;
   final double vdiUnit;
   final double vdiTotal;
+  final void Function() onTap;
 
-  const VendaItemCard(
-      {super.key,
-      required this.vdiProdId,
-      required this.vdiDescricao,
-      required this.vdiQtd,
-      required this.vdiUnit,
-      required this.vdiTotal});
+  const VendaItemCard({
+    super.key,
+    required this.vdiProdId,
+    required this.vdiDescricao,
+    required this.vdiQtd,
+    required this.vdiUnit,
+    required this.vdiTotal,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: const BoxDecoration(
-        border: Border(
-          bottom: BorderSide(
-            width: 1,
-            color: AppColors.lightSecondaryBackground,
+    return GestureDetector(
+      onTap: () => onTap(),
+      child: DecoratedBox(
+        decoration: const BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              width: 1,
+              color: AppColors.lightSecondaryBackground,
+            ),
           ),
         ),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  vdiProdId.toString(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.primary,
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    vdiProdId.toString(),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.primary,
+                    ),
                   ),
-                ),
-                const Text(' • '),
-                Expanded(
-                  child: Text(
-                    vdiDescricao,
-                    overflow: TextOverflow.clip,
+                  const Text(' • '),
+                  Expanded(
+                    child: Text(
+                      vdiDescricao,
+                      overflow: TextOverflow.clip,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 5),
-            Row(
-              children: [
-                const Text(
-                  'Qtd: ',
-                  style: TextStyle(color: AppColors.lighSecondaryText),
-                ),
-                Text(vdiQtd.toString()),
-                const Text(
-                  ' Unit.: ',
-                  style: TextStyle(color: AppColors.lighSecondaryText),
-                ),
-                Text('R\$ ${vdiUnit.toStringAsFixed(2)}'),
-                const Text(
-                  ' Total: ',
-                  style: TextStyle(color: AppColors.lighSecondaryText),
-                ),
-                Text('R\$ ${vdiTotal.toStringAsFixed(2)}'),
-              ],
-            )
-          ],
+                ],
+              ),
+              const SizedBox(height: 5),
+              Row(
+                children: [
+                  const Text(
+                    'Qtd: ',
+                    style: TextStyle(color: AppColors.lighSecondaryText),
+                  ),
+                  Text(vdiQtd.toString()),
+                  const Text(
+                    ' Unit.: ',
+                    style: TextStyle(color: AppColors.lighSecondaryText),
+                  ),
+                  Text('R\$ ${vdiUnit.toStringAsFixed(2)}'),
+                  const Text(
+                    ' Total: ',
+                    style: TextStyle(color: AppColors.lighSecondaryText),
+                  ),
+                  Text('R\$ ${vdiTotal.toStringAsFixed(2)}'),
+                ],
+              )
+            ],
+          ),
         ),
       ),
     );

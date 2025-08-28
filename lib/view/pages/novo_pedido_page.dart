@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/cliente_controller.dart';
+import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/model/cliente.dart';
+import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/pages/pedido_info_page.dart';
 import 'package:mobile_sales/view/widgets/cliente_card.dart';
 
 class NovoPedidoPage extends StatefulWidget {
@@ -14,13 +17,41 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
   final _pesquisaCte = TextEditingController();
 
   final _clienteController = ClienteController();
+  final _vendaController = VendasController();
 
   late Future<List<Cliente>> _clientesFuture;
 
+  void handleCriarPedido(cliId) async {
+    if (!mounted) {
+      return;
+    }
+
+    try {
+      final novoPedido = await _vendaController.novoPedido(cliId);
+
+      if (novoPedido == null) {
+        Navigator.of(context).pop();
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        return;
+      } else {
+        Navigator.of(context).pop();
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute<void>(
+              builder: (context) => PedidoInfoPage(venda: novoPedido)),
+        );
+      }
+    } catch (e) {
+      Navigator.of(context).pop();
+      Utils().customShowDialog(
+          'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+    }
+  }
+
   @override
   void initState() {
-    _clientesFuture =
-        _clienteController.getClientes(pesquisa: _pesquisaCte.text);
+    _clientesFuture = _clienteController.getClientes(_pesquisaCte.text);
     super.initState();
   }
 
@@ -44,8 +75,7 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
             TextField(
               controller: _pesquisaCte,
               onChanged: (text) => setState(() {
-                _clientesFuture =
-                    _clienteController.getClientes(pesquisa: text);
+                _clientesFuture = _clienteController.getClientes(text);
               }),
               decoration: const InputDecoration(
                 label: Text('Pesquisar'),
@@ -77,9 +107,8 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
                               ElevatedButton(
                                 onPressed: () {
                                   setState(() {
-                                    _clientesFuture =
-                                        _clienteController.getClientes(
-                                            pesquisa: _pesquisaCte.text);
+                                    _clientesFuture = _clienteController
+                                        .getClientes(_pesquisaCte.text);
                                   });
                                 },
                                 child: const Text('Tentar novamente'),
@@ -109,7 +138,27 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
                             cidade: cliente.cliCidade ?? '',
                             uf: cliente.cliEstado ?? '',
                             cnpj: cliente.cliCnpj,
-                            onTap: () => print(clientes.length),
+                            onTap: () {
+                              Utils().customShowDialog(
+                                'CONFIRMAR',
+                                'Confirmar',
+                                'Criar novo pedido para o cliente ${cliente.cliRazao}?',
+                                context,
+                                actions: [
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      handleCriarPedido(cliente.cliId);
+                                    },
+                                    child: Text('Sim'),
+                                  ),
+                                  TextButton(
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('Não'))
+                                ],
+                              );
+                            },
                           ),
                         );
                       },

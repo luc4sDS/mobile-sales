@@ -4,7 +4,9 @@ import 'package:mobile_sales/model/cliente.dart';
 class ClienteController {
   List<Cliente> clientes = [];
 
-  Future<List<Cliente>> getClientes({String pesquisa = ''}) async {
+  Future<List<Cliente>> getClientes(String? pesquisa) async {
+    pesquisa ??= '';
+
     final db = await DatabaseService().database;
     final pesquisaIsNumeric = double.tryParse(pesquisa) != null;
 

@@ -41,6 +41,26 @@ class Utils {
     );
   }
 
+  double calculaST(
+    double valor,
+    double aliqintra,
+    double aliqinter,
+    double mva,
+    String estado,
+  ) {
+    if (estado.trim() == '') estado = 'SP';
+
+    if (estado != 'SP') {
+      final baseST = valor * (1 + (mva / 100));
+      final icmsIntra = valor * (aliqintra / 100);
+      final icmsInter = baseST + (aliqinter / 100);
+      final valorST = icmsInter + icmsIntra;
+      return valorST;
+    } else {
+      return 0;
+    }
+  }
+
   Map<String, dynamic> normalizeKeys(Map<String, dynamic> map) {
     return map.map((key, value) => MapEntry(key.toUpperCase(), value));
   }
@@ -54,5 +74,12 @@ class Utils {
       final formatoCustomizado = DateFormat('dd-MM-yy HH:mm:ss');
       return formatoCustomizado.parse(dateString);
     }
+  }
+
+  String getVendaChave(int vendedor, int venda, String cnpj) {
+    return NumberFormat('00000').format(vendedor) +
+        DateFormat('ddMMyyyyhhmmss').format(DateTime.now()) +
+        NumberFormat('000000000').format(venda) +
+        cnpj;
   }
 }

@@ -3,8 +3,6 @@ import 'package:mobile_sales/core/configs/theme/app_theme.dart';
 import 'package:mobile_sales/view/pages/cadastro_usuario_page.dart';
 import 'package:mobile_sales/view/pages/main_page.dart';
 import 'package:mobile_sales/view/pages/novo_pedido_page.dart';
-import 'package:mobile_sales/view/pages/pedido_info_page.dart';
-import 'package:mobile_sales/view/pages/pedidos_page.dart';
 import 'package:mobile_sales/view/pages/login_page.dart';
 import 'package:mobile_sales/view/pages/primeiro_acesso_page.dart';
 import 'package:mobile_sales/view/pages/sincronizar_page.dart';

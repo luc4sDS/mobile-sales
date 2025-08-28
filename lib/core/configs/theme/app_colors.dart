@@ -33,7 +33,8 @@ class AppColors {
   static const lightAbertoText = Color(0xff013957);
   static const lightEnviadoText = Color(0xff095c06);
   static const lightCanceladoText = Color.fromARGB(255, 110, 7, 7);
-  static const lightTertiaryText = Color.fromARGB(255, 0, 83, 138);
+  static const lightTertiaryText = Color.fromARGB(255, 185, 213, 231);
+  static const lightTertiaryBackground = Color.fromARGB(255, 52, 100, 163);
 
   static const grey = Color.fromARGB(255, 95, 95, 95);
 }

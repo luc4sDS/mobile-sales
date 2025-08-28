@@ -7,6 +7,7 @@ class ListSearchModal<T> extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onSelect;
   final String label;
+  final bool? enabled;
 
   const ListSearchModal({
     super.key,
@@ -15,6 +16,7 @@ class ListSearchModal<T> extends StatefulWidget {
     required this.selectedIndex,
     required this.onSelect,
     required this.label,
+    required this.enabled,
   });
 
   @override
@@ -40,7 +42,7 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
     return SizedBox(
       width: double.infinity,
       child: GestureDetector(
-        onTap: () => handleOpenDialog(),
+        onTap: widget.enabled ?? true ? () => handleOpenDialog() : () {},
         child: DecoratedBox(
             decoration: const BoxDecoration(
               color: AppColors.lightSecondaryBackground,
@@ -147,7 +149,7 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
                         ? Container(
                             decoration: BoxDecoration(
                                 color: index == _currentSelectedRecord
-                                    ? AppColors.primary
+                                    ? AppColors.lightTertiaryBackground
                                     : Colors.transparent,
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(8))),

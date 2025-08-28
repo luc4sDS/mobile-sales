@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
+import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/view/pages/pedido_info_page.dart';
 import 'package:mobile_sales/view/widgets/venda_card.dart';
@@ -58,22 +59,63 @@ class _PedidosPageState extends State<PedidosPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: IconButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/novo_pedido');
-        },
-        icon: const Icon(
-          size: 30,
-          Icons.add,
-          color: Colors.white,
-        ),
-        style: IconButton.styleFrom(
-            backgroundColor: AppColors.primary, padding: EdgeInsets.all(12)),
-      ),
+      // floatingActionButton: IconButton(
+      //   onPressed: () {
+      //     Navigator.pushNamed(context, '/novo_pedido').then(
+      //       (_) => setState(
+      //         () {
+      //           _vendasFuture = vendaCtr.getVendas(
+      //               pesquisa: _pesquisaCtr.text, filtros: _filtros);
+      //         },
+      //       ),
+      //     );
+      //   },
+      //   icon: const Icon(
+      //     size: 30,
+      //     Icons.add,
+      //     color: Colors.white,
+      //   ),
+      //   style: IconButton.styleFrom(
+      //       backgroundColor: AppColors.primary, padding: EdgeInsets.all(12)),
+      // ),
       appBar: AppBar(
         centerTitle: false,
         actions: [
-          IconButton(onPressed: () {}, icon: const Icon(Icons.more_vert))
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/novo_pedido').then(
+                (_) => setState(
+                  () {
+                    _vendasFuture = vendaCtr.getVendas(
+                        pesquisa: _pesquisaCtr.text, filtros: _filtros);
+                  },
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+              minimumSize: const Size(10, 10),
+              textStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w500,
+                  fontFamily: 'poppins'),
+            ),
+            child: const Text('Adicionar'),
+          ),
+          IconButton(
+            onPressed: () {
+              showDialog(
+                  context: context,
+                  builder: (context) {
+                    return Container(
+                      color: AppColors.lightBackground,
+                      height: 100,
+                      width: 100,
+                    );
+                  });
+            },
+            icon: const Icon(Icons.more_vert),
+          ),
         ],
         automaticallyImplyLeading: false,
         title: const Text('Pedidos'),
@@ -183,6 +225,14 @@ class _PedidosPageState extends State<PedidosPage> {
                               MaterialPageRoute<void>(
                                   builder: (context) =>
                                       PedidoInfoPage(venda: venda)),
+                            ).then(
+                              (_) => setState(
+                                () {
+                                  _vendasFuture = vendaCtr.getVendas(
+                                      pesquisa: _pesquisaCtr.text,
+                                      filtros: _filtros);
+                                },
+                              ),
                             );
                           },
                         ),

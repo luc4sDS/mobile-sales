@@ -5,6 +5,7 @@ import 'package:mobile_sales/controller/meio_pagamento_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/sincronia_controller.dart';
 import 'package:mobile_sales/controller/tipo_entrega_controller.dart';
+import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/forma_pagamento.dart';
@@ -12,7 +13,11 @@ import 'package:mobile_sales/model/meio_pagamento.dart';
 import 'package:mobile_sales/model/tipo_entrega.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/model/venda_item.dart';
+import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/widgets/adicionar_produto_modal.dart';
+import 'package:mobile_sales/view/widgets/editar_item_modal.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
+import 'package:mobile_sales/view/widgets/valor_card.dart';
 import 'package:mobile_sales/view/widgets/venda_item_card.dart';
 import 'package:mobile_sales/view/widgets/venda_situacao_chip.dart';
 
@@ -43,13 +48,14 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   final _formaPagamentoController = FormaPagamentoController();
   final _meioPagamentoController = MeioPagamentoController();
   final _tipoEntregaController = TipoEntregaController();
+  final _vendaController = VendasController();
 
   final _pesquisaProdutosCte = TextEditingController();
   final _emailCte = TextEditingController();
 
   int getIndexByFieldValue<T, A>(
       List<T> list, A Function(T) extractValue, A value) {
-    for (var i = 0; i < list.length - 1; i++) {
+    for (var i = 0; i < list.length; i++) {
       if (extractValue(list[i]) == value) {
         return i;
       }
@@ -60,6 +66,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
 
   void handleInitState() async {
     _emailCte.text = widget.venda.vndEmail ?? '';
+    await _parametrosController.getParametros();
     _itens = await _vendasItensController.getVendaItens(widget.venda.vndId);
     _formasPagamento = await _formaPagamentoController.getAll();
     _meiosPagamento = await _meioPagamentoController.getAll();
@@ -68,7 +75,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     _selectedFormaPagamento = getIndexByFieldValue<FormaPagamento, int>(
         _formasPagamento, (e) => e.fpId, widget.venda.vndFormaPagto ?? 0);
     _selectedMeioPagamento = getIndexByFieldValue<MeioPagamento, int>(
-        _meiosPagamento, (e) => e.mpId, widget.venda.vndMeio ?? 0);
+        _meiosPagamento, (e) => e.mpId, widget.venda.vndMeio ?? -1);
     _selectedTipoEntrega = getIndexByFieldValue<TipoEntrega, int>(
         _tiposEntrega, (e) => e.tpId, widget.venda.vndEntrega ?? 0);
 
@@ -76,8 +83,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       loading = false;
     });
   }
-
-  // Future
 
   void handleFormasPagamentoSearch(String text) async {
     _formasPagamento = await _formaPagamentoController.getFormasPagamento(text);
@@ -98,11 +103,11 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
         centerTitle: false,
-        title: Text(widget.venda.vndId.toString()),
+        title: Text(venda.vndId.toString()),
         actions: [
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-            child: VendaSituacaoChip(situacao: widget.venda.vndEnviado),
+            child: VendaSituacaoChip(situacao: venda.vndEnviado),
           ),
           IconButton(
             icon: const Icon(Icons.more_vert),
@@ -120,6 +125,27 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Column(
+                      children: [
+                        Wrap(
+                          runSpacing: 10,
+                          direction: Axis.horizontal,
+                          spacing: 10,
+                          crossAxisAlignment: WrapCrossAlignment.start,
+                          children: [
+                            ValorCard(
+                                label: 'Total Pedido', valor: venda.vndTotal),
+                            ValorCard(
+                                label: 'Total Produtos', valor: venda.vndValor),
+                            ValorCard(
+                                label: 'Total ST', valor: venda.vndTotalSt)
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                   Expanded(
                     child: DefaultTabController(
                       // animationDuration: Duration(milliseconds: 0),
@@ -185,7 +211,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                       ),
                                                     ),
                                                     Text(
-                                                      widget.venda.vndCliCod
+                                                      venda.vndCliCod
                                                           .toString(),
                                                       style: const TextStyle(
                                                           fontSize: 18),
@@ -213,8 +239,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                         children: [
                                                           Expanded(
                                                             child: Text(
-                                                              widget.venda
-                                                                  .vndCliNome
+                                                              venda.vndCliNome
                                                                   .toString(),
                                                               style:
                                                                   const TextStyle(
@@ -248,7 +273,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                     ),
                                                   ),
                                                   Text(
-                                                    widget.venda.vndCliCnpj ??
+                                                    venda.vndCliCnpj ??
                                                         'Indefinido',
                                                     style: const TextStyle(
                                                         fontSize: 16),
@@ -271,6 +296,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   ),
                                                 ),
                                                 TextField(
+                                                  enabled:
+                                                      venda.vndEnviado == 'N',
                                                   onChanged: (_) =>
                                                       print('teste'),
                                                   controller: _emailCte,
@@ -323,12 +350,25 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                               ),
                                             ),
                                             ListSearchModal(
+                                              enabled: venda.vndEnviado == 'N',
                                               label: 'Forma de Pagamento',
                                               data: _formasPagamento,
                                               extractName: (e) => e.fpDesc,
                                               selectedIndex:
                                                   _selectedFormaPagamento,
                                               onSelect: (index) {
+                                                venda = venda.copyWith(
+                                                  vndFormaNome:
+                                                      _formasPagamento[index]
+                                                          .fpDesc,
+                                                  vndFormaPagto:
+                                                      _formasPagamento[index]
+                                                          .fpId,
+                                                );
+
+                                                _vendaController
+                                                    .salvarVenda(venda);
+
                                                 setState(() {
                                                   _selectedFormaPagamento =
                                                       index;
@@ -348,14 +388,30 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                               ),
                                             ),
                                             ListSearchModal(
+                                              enabled: venda.vndEnviado == 'N',
                                               label: 'Meio de Pagamento',
                                               data: _meiosPagamento,
                                               extractName: (e) => e.mpDesc,
                                               selectedIndex:
                                                   _selectedMeioPagamento,
-                                              onSelect: (index) => setState(() {
-                                                _selectedMeioPagamento = index;
-                                              }),
+                                              onSelect: (index) {
+                                                venda = venda.copyWith(
+                                                  vndMeioNome:
+                                                      _meiosPagamento[index]
+                                                          .mpDesc,
+                                                  vndMeio:
+                                                      _meiosPagamento[index]
+                                                          .mpId,
+                                                );
+
+                                                _vendaController
+                                                    .salvarVenda(venda);
+
+                                                setState(() {
+                                                  _selectedMeioPagamento =
+                                                      index;
+                                                });
+                                              },
                                             ),
                                             const SizedBox(
                                               height: 10,
@@ -370,14 +426,28 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                               ),
                                             ),
                                             ListSearchModal(
+                                              enabled: venda.vndEnviado == 'N',
                                               label: 'Tipo de Entrega',
                                               data: _tiposEntrega,
                                               extractName: (e) => e.tpDesc,
                                               selectedIndex:
                                                   _selectedTipoEntrega,
-                                              onSelect: (index) => setState(() {
-                                                _selectedTipoEntrega = index;
-                                              }),
+                                              onSelect: (index) {
+                                                venda = venda.copyWith(
+                                                  vndNEntrega:
+                                                      _tiposEntrega[index]
+                                                          .tpDesc,
+                                                  vndEntrega:
+                                                      _tiposEntrega[index].tpId,
+                                                );
+
+                                                _vendaController
+                                                    .salvarVenda(venda);
+
+                                                setState(() {
+                                                  _selectedTipoEntrega = index;
+                                                });
+                                              },
                                             ),
                                           ],
                                         ),
@@ -391,15 +461,36 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: Column(
                                 children: [
-                                  venda.vndEnviado == 'P'
-                                      ? Padding(
-                                          padding: const EdgeInsets.all(7.0),
-                                          child: TextField(
-                                            controller: _pesquisaProdutosCte,
-                                            decoration: const InputDecoration(
-                                                label: Text('Pesquisar'),
-                                                suffixIcon: Icon(Icons.search)),
-                                          ),
+                                  venda.vndEnviado == 'N'
+                                      ? Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.end,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                showModalBottomSheet(
+                                                  useSafeArea: true,
+                                                  backgroundColor:
+                                                      Colors.transparent,
+                                                  isScrollControlled: true,
+                                                  context: context,
+                                                  builder: (context) =>
+                                                      AdicionarProdutoModal(),
+                                                );
+                                              },
+                                              style: ElevatedButton.styleFrom(
+                                                padding:
+                                                    const EdgeInsets.fromLTRB(
+                                                        14, 5, 14, 5),
+                                                minimumSize: const Size(10, 10),
+                                                textStyle: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontFamily: 'poppins'),
+                                              ),
+                                              child: const Text('Adicionar'),
+                                            ),
+                                          ],
                                         )
                                       : const SizedBox(),
                                   Expanded(
@@ -411,6 +502,37 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                           padding: const EdgeInsets.fromLTRB(
                                               0, 0, 0, 7),
                                           child: VendaItemCard(
+                                            onTap: () {
+                                              showModalBottomSheet(
+                                                useSafeArea: true,
+                                                backgroundColor:
+                                                    Colors.transparent,
+                                                isScrollControlled: true,
+                                                context: context,
+                                                builder: (context) =>
+                                                    EditarItemModal(
+                                                  readOnly:
+                                                      venda.vndEnviado == 'N',
+                                                  onSave: (item) async {
+                                                    try {
+                                                      venda.itens[i] = item;
+                                                      _vendaController
+                                                          .totalizar(venda);
+                                                      await _vendaController
+                                                          .salvarVenda(venda);
+                                                      setState(() {});
+                                                    } catch (e) {
+                                                      Utils().customShowDialog(
+                                                          'ERRO',
+                                                          'Erro!',
+                                                          e,
+                                                          context);
+                                                    }
+                                                  },
+                                                  item: venda.itens[i],
+                                                ),
+                                              );
+                                            },
                                             vdiProdId: item.vdiProdCod,
                                             vdiDescricao: item.vdiDescricao,
                                             vdiQtd: item.vdiQtd,
@@ -424,12 +546,22 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                 ],
                               ),
                             ),
-                            Text('Teste 2'),
+                            Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Column(children: [
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    _vendaController.totalizar(venda);
+                                  },
+                                  child: const Text('Test'),
+                                )
+                              ]),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                  )
+                  ),
                 ],
               ),
             ),
