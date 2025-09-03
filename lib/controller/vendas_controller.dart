@@ -56,6 +56,18 @@ class VendasController {
     return _vendas;
   }
 
+  Future<Venda> addItem(Venda venda, VendaItem vendaItem) async {
+    Venda novaVenda = Venda.fromMap(venda.toMap());
+    novaVenda.itens.add(vendaItem);
+
+    novaVenda = totalizar(novaVenda);
+    if (await salvarVenda(novaVenda) > 0) {
+      return novaVenda;
+    } else {
+      return venda;
+    }
+  }
+
   Future<Venda?> getVendaById(int id) async {
     final db = await DatabaseService().database;
 
@@ -68,8 +80,8 @@ class VendasController {
     return Venda.fromMap(res[0]);
   }
 
-  void totalizar(Venda venda) async {
-    final itens = venda.itens;
+  Venda totalizar(Venda venda) {
+    final itens = List<VendaItem>.from(venda.itens);
 
     //Valores da venda
     double vendaTotal = 0;
@@ -81,7 +93,8 @@ class VendasController {
     double vendaDesconto = 0;
 
     for (var i = 0; i < itens.length; i++) {
-      itens[i].copyWith(vdiTotal: itens[i].vdiUnit * itens[i].vdiQtd);
+      itens[i] =
+          itens[i].copyWith(vdiTotal: itens[i].vdiUnit * itens[i].vdiQtd);
 
       if (itens[i].vdiBonificado)
         vendaTotalBonificacao = vendaTotalBonificacao + itens[i].vdiTotal;
@@ -105,7 +118,7 @@ class VendasController {
 
     vendaTotal = vendaValor - vendaDesconto;
 
-    venda = venda.copyWith(
+    return venda.copyWith(
       vndTotal: vendaTotal,
       vndTotalSt: vendaTotalSt,
       vndTotalIpi: vendaTotalIPI,

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -12,6 +14,26 @@ class DatabaseService {
     if (_db != null) return _db!;
     _db = await _initDatabase();
     return _db!;
+  }
+
+  Future<void> deleteAllAppData() async {
+    try {
+      // 1. Deletar banco de dados
+      String dbPath = await getDatabasesPath();
+      Directory(dbPath).deleteSync(recursive: true);
+
+      // 2. Deletar SharedPreferences
+      // final prefs = await SharedPreferences.getInstance();
+      // await prefs.clear();
+
+      // 3. Deletar documentos
+      // Directory docsDir = awaist getApplicationDocumentsDirectory();
+      // docsDir.deleteSync(recurive: true);
+
+      print('✅ Todos os dados foram deletados!');
+    } catch (e) {
+      print('❌ Erro ao limpar dados: $e');
+    }
   }
 
   Future<Database> _initDatabase() async {
@@ -241,7 +263,7 @@ class DatabaseService {
           VDI_ID INTEGER PRIMARY KEY,
           VDI_VND_ID INTEGER,
           VDI_VND_CHAVE TEXT,
-          VDI_EAN INTEGER,
+          VDI_EAN TEXT,
           VDI_PROD_COD INTEGER,
           VDI_DESCRICAO TEXT,
           VDI_TIPO TEXT,

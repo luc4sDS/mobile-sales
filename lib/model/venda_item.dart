@@ -2,7 +2,7 @@ class VendaItem {
   final int? vdiId;
   final int vdiVndId;
   final String? vdiVndChave;
-  final int? vdiEan;
+  final String? vdiEan;
   final int vdiProdCod;
   final String vdiDescricao;
   final String vdiTipo;
@@ -64,7 +64,7 @@ class VendaItem {
       vdiId: map['VDI_ID'] as int?,
       vdiVndId: map['VDI_VND_ID'] as int,
       vdiVndChave: map['VDI_VND_CHAVE'] as String?,
-      vdiEan: map['VDI_EAN'] as int?,
+      vdiEan: map['VDI_EAN'] as String?,
       vdiProdCod: map['VDI_PROD_COD'] as int,
       vdiDescricao: map['VDI_DESCRICAO'] as String,
       vdiTipo: map['VDI_TIPO'] as String? ?? 'P',
@@ -97,7 +97,9 @@ class VendaItem {
       vdiId: map['VDI_ID'] as int?,
       vdiVndId: map['VDI_VND_ID'] as int,
       vdiVndChave: map['VDI_VND_CHAVE'] as String?,
-      vdiEan: map['VDI_EAN'] as int?,
+      vdiEan: (map['VDI_EAN'] as int?) == null
+          ? null
+          : (map['VDI_EAN'] as int).toString(),
       vdiProdCod: map['VDI_PROD_COD'] as int,
       vdiDescricao: map['VDI_DESCRICAO'] as String,
       vdiTipo: map['VDI_TIPO'] as String? ?? 'P',
@@ -162,7 +164,7 @@ class VendaItem {
     int? vdiId,
     int? vdiVndId,
     String? vdiVndChave,
-    int? vdiEan,
+    String? vdiEan,
     int? vdiProdCod,
     String? vdiDescricao,
     String? vdiTipo,

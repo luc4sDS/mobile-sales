@@ -15,7 +15,7 @@ class ValorCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: const BoxDecoration(
-        color: AppColors.lightTertiaryBackground,
+        color: Colors.transparent,
         borderRadius: BorderRadius.all(
           Radius.circular(5),
         ),
@@ -28,7 +28,7 @@ class ValorCard extends StatelessWidget {
             Text(
               label,
               style: const TextStyle(
-                color: AppColors.lightTertiaryText,
+                color: AppColors.lighSecondaryText,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
               ),
@@ -36,7 +36,7 @@ class ValorCard extends StatelessWidget {
             Text(
               'R\$ ${valor.toStringAsFixed(2)}',
               style: const TextStyle(
-                color: Colors.white,
+                color: AppColors.lightPrimaryText,
                 fontSize: 16,
               ),
             )

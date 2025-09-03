@@ -8,6 +8,7 @@ class ClienteCard extends StatelessWidget {
   final String uf;
   final String cnpj;
   final void Function() onTap;
+  final bool? hideTextOverflow;
 
   const ClienteCard({
     super.key,
@@ -17,6 +18,7 @@ class ClienteCard extends StatelessWidget {
     required this.uf,
     required this.cnpj,
     required this.onTap,
+    this.hideTextOverflow,
   });
 
   @override
@@ -34,6 +36,7 @@ class ClienteCard extends StatelessWidget {
           child: Column(
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     id.toString(),
@@ -44,7 +47,9 @@ class ClienteCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       razao,
-                      overflow: TextOverflow.ellipsis,
+                      overflow: hideTextOverflow ?? true
+                          ? TextOverflow.ellipsis
+                          : TextOverflow.visible,
                     ),
                   ),
                 ],

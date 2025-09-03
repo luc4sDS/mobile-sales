@@ -146,6 +146,11 @@ class _LoginPageState extends State<LoginPage> {
                   Column(
                     children: [
                       ElevatedButton(
+                        onLongPress: () async {
+                          final db = DatabaseService();
+
+                          await db.deleteAllAppData();
+                        },
                         onPressed: isLoading ? null : login,
                         child: isLoading
                             ? const SizedBox(

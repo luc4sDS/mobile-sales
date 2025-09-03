@@ -133,6 +133,7 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: ClienteCard(
+                            hideTextOverflow: false,
                             id: cliente.cliId ?? 0,
                             razao: cliente.cliRazao ?? '',
                             cidade: cliente.cliCidade ?? '',

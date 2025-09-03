@@ -342,12 +342,7 @@ class _SincronizarPageState extends State<SincronizarPage>
 
     result = await sinc.sincronizarVendas(
       vendas: sinc.vendas,
-      onSyncRecord: () => {
-        progressCount++,
-        _controller.animateTo(
-            totalRegistros == 0 ? 0 : progressCount / totalRegistros,
-            duration: const Duration(milliseconds: 200))
-      },
+      onSyncRecord: () => {setState(() => progressCount++)},
     );
 
     if (result != '') {

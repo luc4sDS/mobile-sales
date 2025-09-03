@@ -119,7 +119,8 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
             children: [
               Text(
                 widget.label,
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                style:
+                    const TextStyle(fontWeight: FontWeight.w500, fontSize: 16),
               ),
               const SizedBox(
                 height: 10,

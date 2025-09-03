@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/forma_pagamento_controller.dart';
@@ -34,6 +36,7 @@ class PedidoInfoPage extends StatefulWidget {
 }
 
 class _PedidoInfoPageState extends State<PedidoInfoPage> {
+  late Venda venda;
   List<VendaItem> _itens = [];
   List<FormaPagamento> _formasPagamento = [];
   List<MeioPagamento> _meiosPagamento = [];
@@ -42,6 +45,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   int _selectedMeioPagamento = -1;
   int _selectedTipoEntrega = 1;
   bool loading = true;
+  Timer? _emailTimer;
 
   final _parametrosController = ParametrosController();
   final _vendasItensController = VendasItensController();
@@ -64,20 +68,81 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     return -1;
   }
 
+  void handleEmailChange() async {
+    _emailTimer?.cancel();
+
+    _emailTimer = Timer(const Duration(milliseconds: 300), () {
+      venda = venda.copyWith(vndEmail: _emailCte.text);
+
+      _vendaController.salvarVenda(venda);
+    });
+  }
+
+  void handleEditarItem(VendaItem item, int index) async {
+    try {
+      venda.itens[index] = item;
+      venda = _vendaController.totalizar(venda);
+      await _vendaController.salvarVenda(venda);
+      setState(() {});
+    } catch (e) {
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!', e, context);
+      }
+    }
+  }
+
+  void handleAddItem(VendaItem item) async {
+    try {
+      final List<String> erros = [];
+
+      // Validar
+      if (item.vdiQtd == 0) erros.add('Quantidade precisa ser maior que zero');
+      if (item.vdiUnit < item.vdiPmin) {
+        erros.add('Preço unitário menor que o permitido');
+      }
+
+      if (erros.isNotEmpty) {
+        if (mounted) {
+          Utils().customShowDialog(
+              'ERRO', 'Erro ao adicionar item', erros.join('\n'), context);
+        }
+        return;
+      }
+
+      final vendaAtualizada = await _vendaController.addItem(venda, item);
+      // Adiciona o item e retorna a venda atualizada
+      setState(() {
+        venda = vendaAtualizada;
+      });
+    } catch (e) {
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro ao adicionar item', e.toString(), context);
+      }
+    }
+  }
+
   void handleInitState() async {
-    _emailCte.text = widget.venda.vndEmail ?? '';
-    await _parametrosController.getParametros();
+    setState(() {
+      loading = true;
+    });
+
+    venda = widget.venda;
     _itens = await _vendasItensController.getVendaItens(widget.venda.vndId);
+    venda = venda.copyWith(itens: _itens);
+
+    _emailCte.text = venda.vndEmail ?? '';
+    await _parametrosController.getParametros();
     _formasPagamento = await _formaPagamentoController.getAll();
     _meiosPagamento = await _meioPagamentoController.getAll();
     _tiposEntrega = await _tipoEntregaController.getAll();
 
     _selectedFormaPagamento = getIndexByFieldValue<FormaPagamento, int>(
-        _formasPagamento, (e) => e.fpId, widget.venda.vndFormaPagto ?? 0);
+        _formasPagamento, (e) => e.fpId, venda.vndFormaPagto ?? 0);
     _selectedMeioPagamento = getIndexByFieldValue<MeioPagamento, int>(
-        _meiosPagamento, (e) => e.mpId, widget.venda.vndMeio ?? -1);
+        _meiosPagamento, (e) => e.mpId, venda.vndMeio ?? -1);
     _selectedTipoEntrega = getIndexByFieldValue<TipoEntrega, int>(
-        _tiposEntrega, (e) => e.tpId, widget.venda.vndEntrega ?? 0);
+        _tiposEntrega, (e) => e.tpId, venda.vndEntrega ?? 0);
 
     setState(() {
       loading = false;
@@ -97,8 +162,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    Venda venda = widget.venda.copyWith(itens: _itens);
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -299,7 +362,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   enabled:
                                                       venda.vndEnviado == 'N',
                                                   onChanged: (_) =>
-                                                      print('teste'),
+                                                      handleEmailChange(),
                                                   controller: _emailCte,
                                                   textAlignVertical:
                                                       TextAlignVertical.center,
@@ -475,7 +538,18 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   isScrollControlled: true,
                                                   context: context,
                                                   builder: (context) =>
-                                                      AdicionarProdutoModal(),
+                                                      AdicionarProdutoModal(
+                                                    vendaChave:
+                                                        venda.vndChave ?? '',
+                                                    vendaEstado:
+                                                        venda.vndUf ?? '',
+                                                    vendaId: venda.vndId,
+                                                    vendaPrAcrescimo:
+                                                        venda.vndPrAcrescimo,
+                                                    onSave: (item) {
+                                                      handleAddItem(item);
+                                                    },
+                                                  ),
                                                 );
                                               },
                                               style: ElevatedButton.styleFrom(
@@ -511,23 +585,11 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 context: context,
                                                 builder: (context) =>
                                                     EditarItemModal(
+                                                  estado: venda.vndUf ?? '',
                                                   readOnly:
-                                                      venda.vndEnviado == 'N',
-                                                  onSave: (item) async {
-                                                    try {
-                                                      venda.itens[i] = item;
-                                                      _vendaController
-                                                          .totalizar(venda);
-                                                      await _vendaController
-                                                          .salvarVenda(venda);
-                                                      setState(() {});
-                                                    } catch (e) {
-                                                      Utils().customShowDialog(
-                                                          'ERRO',
-                                                          'Erro!',
-                                                          e,
-                                                          context);
-                                                    }
+                                                      venda.vndEnviado != 'N',
+                                                  onSave: (item) {
+                                                    handleEditarItem(item, i);
                                                   },
                                                   item: venda.itens[i],
                                                 ),

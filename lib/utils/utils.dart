@@ -53,8 +53,8 @@ class Utils {
     if (estado != 'SP') {
       final baseST = valor * (1 + (mva / 100));
       final icmsIntra = valor * (aliqintra / 100);
-      final icmsInter = baseST + (aliqinter / 100);
-      final valorST = icmsInter + icmsIntra;
+      final icmsInter = baseST * (aliqinter / 100);
+      final valorST = icmsInter - icmsIntra;
       return valorST;
     } else {
       return 0;

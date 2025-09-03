@@ -39,19 +39,28 @@ class VendaItemCard extends StatelessWidget {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    vdiProdId.toString(),
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                  const Text(' • '),
                   Expanded(
-                    child: Text(
-                      vdiDescricao,
-                      overflow: TextOverflow.clip,
-                    ),
+                    child: RichText(
+                        overflow: TextOverflow.clip,
+                        text: TextSpan(children: [
+                          TextSpan(
+                            text: vdiProdId.toString(),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: ' • ',
+                            style: TextStyle(
+                              color: AppColors.lightPrimaryText,
+                            ),
+                          ),
+                          TextSpan(
+                              text: vdiDescricao,
+                              style: const TextStyle(
+                                  color: AppColors.lightPrimaryText)),
+                        ])),
                   ),
                 ],
               ),

@@ -1,7 +1,11 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_sales/controller/produto_st_controller.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda_item.dart';
+import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
 
 class UltimasVendas {
@@ -24,14 +28,16 @@ class UltimasVendas {
 
 class EditarItemModal extends StatefulWidget {
   final VendaItem item;
+  final String estado;
   final void Function(VendaItem) onSave;
-  final bool readOnly;
+  final bool? readOnly;
 
   const EditarItemModal({
     super.key,
     required this.item,
     required this.onSave,
-    required this.readOnly,
+    this.readOnly,
+    required this.estado,
   });
 
   @override
@@ -39,6 +45,10 @@ class EditarItemModal extends StatefulWidget {
 }
 
 class _EditarItemModalState extends State<EditarItemModal> {
+  //Controllers
+  final _stController = ProdutoStController();
+
+  //TextEditingControllers
   final _qtdCte = TextEditingController();
   final _unitarioCte = TextEditingController();
   final _descontoCte = TextEditingController();
@@ -60,9 +70,32 @@ class _EditarItemModalState extends State<EditarItemModal> {
     _obsCte.text = widget.item.vdiObs ?? '';
   }
 
+  void handleSave(VendaItem item) async {
+    final qtd = double.tryParse(_qtdCte.text) ?? 0;
+    final unit = double.tryParse(_unitarioCte.text) ?? 0;
+    final desc = max<double>(0, item.vdiPreco - unit);
+    final total = qtd * unit;
+    final vlSt = Utils().calculaST(
+        total, item.vdiAlintra, item.vdiAlinter, item.vdiMva, widget.estado);
+
+    item = item.copyWith(
+      vdiQtd: qtd,
+      vdiUnit: unit,
+      vdiDesc: desc,
+      vdiObs: _obsCte.text,
+      vdiVlst: vlSt,
+      vdiTotal: total,
+      vdiTotalg: total,
+    );
+
+    widget.onSave(item);
+  }
+
   @override
   Widget build(BuildContext context) {
     VendaItem item = widget.item;
+
+    final readOnly = widget.readOnly ?? false;
 
     return Column(
       children: [
@@ -175,6 +208,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                         ),
                                       ),
                                       TextField(
+                                        enabled: !readOnly,
                                         controller: _qtdCte,
                                         textAlign: TextAlign.end,
                                         keyboardType: TextInputType.number,
@@ -201,6 +235,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                         ),
                                       ),
                                       TextField(
+                                        enabled: !readOnly,
                                         controller: _unitarioCte,
                                         textAlign: TextAlign.end,
                                         keyboardType: TextInputType.number,
@@ -227,6 +262,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                         ),
                                       ),
                                       TextField(
+                                        enabled: !readOnly,
                                         controller: _descontoCte,
                                         textAlign: TextAlign.end,
                                         keyboardType: TextInputType.number,
@@ -258,6 +294,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                               SizedBox(
                                 height: 150,
                                 child: TextField(
+                                  enabled: !readOnly,
                                   maxLines: null,
                                   minLines: 10,
                                   controller: _obsCte,
@@ -269,18 +306,22 @@ class _EditarItemModalState extends State<EditarItemModal> {
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () => widget.onSave(item),
-                          child: const Text('Salvar'),
-                        ),
-                      ],
-                    ),
-                  )
+                  !readOnly
+                      ? Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  handleSave(item);
+                                },
+                                child: const Text('Salvar'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : SizedBox.shrink()
                 ],
               ),
             ),

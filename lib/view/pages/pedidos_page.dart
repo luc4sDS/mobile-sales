@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
-import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/view/pages/pedido_info_page.dart';
 import 'package:mobile_sales/view/widgets/venda_card.dart';
@@ -23,6 +22,7 @@ class _PedidosPageState extends State<PedidosPage> {
   late Future<List<Venda>> _vendasFuture;
   final _pesquisaCtr = TextEditingController();
   Timer? _pesquisaTimer;
+  final _pesquisaFocusNode = FocusNode();
   final List<String> _filtros = ['N'];
 
   @override
@@ -127,6 +127,7 @@ class _PedidosPageState extends State<PedidosPage> {
             child: Column(
               children: [
                 TextField(
+                  focusNode: _pesquisaFocusNode,
                   onChanged: handlePesquisaChanged,
                   controller: _pesquisaCtr,
                   decoration: const InputDecoration(
@@ -135,30 +136,28 @@ class _PedidosPageState extends State<PedidosPage> {
                 const SizedBox(
                   height: 10,
                 ),
-                Container(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      VendaSituacaoToggle(
-                        situ: 'Aberto',
-                        estado: _filtros.contains('N'),
-                        onTap: () => handleSituToggleTap('N'),
-                      ),
-                      const SizedBox(width: 5),
-                      VendaSituacaoToggle(
-                        situ: 'Enviado',
-                        estado: _filtros.contains('P'),
-                        onTap: () => handleSituToggleTap('P'),
-                      ),
-                      const SizedBox(width: 5),
-                      VendaSituacaoToggle(
-                        situ: 'Cancelado',
-                        estado: _filtros.contains('C'),
-                        onTap: () => handleSituToggleTap('C'),
-                      ),
-                    ],
-                  ),
-                )
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    VendaSituacaoToggle(
+                      situ: 'Aberto',
+                      estado: _filtros.contains('N'),
+                      onTap: () => handleSituToggleTap('N'),
+                    ),
+                    const SizedBox(width: 5),
+                    VendaSituacaoToggle(
+                      situ: 'Enviado',
+                      estado: _filtros.contains('P'),
+                      onTap: () => handleSituToggleTap('P'),
+                    ),
+                    const SizedBox(width: 5),
+                    VendaSituacaoToggle(
+                      situ: 'Cancelado',
+                      estado: _filtros.contains('C'),
+                      onTap: () => handleSituToggleTap('C'),
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -220,6 +219,7 @@ class _PedidosPageState extends State<PedidosPage> {
                           estado: venda.vndUf ?? '',
                           cidade: venda.vndCidade ?? '',
                           handleTap: () async {
+                            _pesquisaFocusNode.unfocus();
                             Navigator.push(
                               context,
                               MaterialPageRoute<void>(

@@ -7,8 +7,9 @@ class ProdutoController {
 
     final res = await db.query(
       'PRODUTOS',
-      where: 'PROD_ID = ? OR PROD_DESCRICAO LIKE ?',
+      where: "PROD_ID = ? OR PROD_DESCRICAO LIKE ? AND PROD_ATIVO <> 'N'",
       whereArgs: [pesquisa, '%${pesquisa.replaceAll(' ', '%')}%'],
+      orderBy: 'PROD_DESCRICAO ASC',
     );
 
     return res.map((e) => Produto.fromMap(e)).toList();
