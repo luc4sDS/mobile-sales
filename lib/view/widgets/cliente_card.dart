@@ -68,10 +68,13 @@ class ClienteCard extends StatelessWidget {
               ),
               Row(
                 children: [
-                  Text(
-                    '$cidade, $uf',
-                    style: const TextStyle(
-                      color: AppColors.lighSecondaryText,
+                  Expanded(
+                    child: Text(
+                      overflow: TextOverflow.ellipsis,
+                      '$cidade, $uf',
+                      style: const TextStyle(
+                        color: AppColors.lighSecondaryText,
+                      ),
                     ),
                   )
                 ],

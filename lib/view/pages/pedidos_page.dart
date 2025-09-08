@@ -5,7 +5,10 @@ import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda.dart';
+import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/pages/novo_pedido_page.dart';
 import 'package:mobile_sales/view/pages/pedido_info_page.dart';
+import 'package:mobile_sales/view/widgets/main_options_button.dart';
 import 'package:mobile_sales/view/widgets/venda_card.dart';
 import 'package:mobile_sales/view/widgets/venda_situacao_toggle.dart';
 
@@ -17,7 +20,7 @@ class PedidosPage extends StatefulWidget {
 }
 
 class _PedidosPageState extends State<PedidosPage> {
-  final VendasController vendaCtr = VendasController();
+  final VendasController _vendaController = VendasController();
   final vendaItensCtr = VendasItensController();
   late Future<List<Venda>> _vendasFuture;
   final _pesquisaCtr = TextEditingController();
@@ -28,8 +31,42 @@ class _PedidosPageState extends State<PedidosPage> {
   @override
   void initState() {
     super.initState();
-    _vendasFuture =
-        vendaCtr.getVendas(pesquisa: _pesquisaCtr.text, filtros: _filtros);
+    _vendasFuture = _vendaController.getVendas(
+        pesquisa: _pesquisaCtr.text, filtros: _filtros);
+  }
+
+  void handleCriarPedido(cliId) async {
+    try {
+      final novoPedido = await _vendaController.novoPedido(cliId);
+
+      if (novoPedido == null) {
+        if (mounted) Navigator.of(context).pop();
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        return;
+      } else {
+        if (mounted) Navigator.of(context).pop();
+        if (mounted) Navigator.of(context).pop();
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute<void>(
+                builder: (context) => PedidoInfoPage(venda: novoPedido)),
+          ).then((_) {
+            setState(() {
+              _vendasFuture = _vendaController.getVendas(
+                pesquisa: _pesquisaCtr.text,
+                filtros: _filtros,
+              );
+            });
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) Navigator.of(context).pop();
+      Utils().customShowDialog(
+          'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+    }
   }
 
   void handlePesquisaChanged(String vl) {
@@ -37,8 +74,8 @@ class _PedidosPageState extends State<PedidosPage> {
 
     _pesquisaTimer = Timer(const Duration(milliseconds: 300), () {
       setState(() {
-        _vendasFuture =
-            vendaCtr.getVendas(pesquisa: _pesquisaCtr.text, filtros: _filtros);
+        _vendasFuture = _vendaController.getVendas(
+            pesquisa: _pesquisaCtr.text, filtros: _filtros);
       });
     });
   }
@@ -51,44 +88,45 @@ class _PedidosPageState extends State<PedidosPage> {
         _filtros.add(situ);
       }
 
-      _vendasFuture =
-          vendaCtr.getVendas(pesquisa: _pesquisaCtr.text, filtros: _filtros);
+      _vendasFuture = _vendaController.getVendas(
+          pesquisa: _pesquisaCtr.text, filtros: _filtros);
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // floatingActionButton: IconButton(
-      //   onPressed: () {
-      //     Navigator.pushNamed(context, '/novo_pedido').then(
-      //       (_) => setState(
-      //         () {
-      //           _vendasFuture = vendaCtr.getVendas(
-      //               pesquisa: _pesquisaCtr.text, filtros: _filtros);
-      //         },
-      //       ),
-      //     );
-      //   },
-      //   icon: const Icon(
-      //     size: 30,
-      //     Icons.add,
-      //     color: Colors.white,
-      //   ),
-      //   style: IconButton.styleFrom(
-      //       backgroundColor: AppColors.primary, padding: EdgeInsets.all(12)),
-      // ),
       appBar: AppBar(
         centerTitle: false,
         actions: [
           ElevatedButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/novo_pedido').then(
-                (_) => setState(
-                  () {
-                    _vendasFuture = vendaCtr.getVendas(
-                        pesquisa: _pesquisaCtr.text, filtros: _filtros);
-                  },
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (context) => NovoPedidoPage(
+                    cliCardTap: (cliente) {
+                      Utils().customShowDialog(
+                        'CONFIRMAR',
+                        'Confirmar',
+                        'Criar novo pedido para o cliente ${cliente.cliRazao}?',
+                        context,
+                        actions: [
+                          ElevatedButton(
+                            onPressed: () {
+                              handleCriarPedido(cliente.cliId);
+                            },
+                            child: const Text('Sim'),
+                          ),
+                          TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Não'))
+                        ],
+                      );
+                    },
+                  ),
                 ),
               );
             },
@@ -102,20 +140,7 @@ class _PedidosPageState extends State<PedidosPage> {
             ),
             child: const Text('Adicionar'),
           ),
-          IconButton(
-            onPressed: () {
-              showDialog(
-                  context: context,
-                  builder: (context) {
-                    return Container(
-                      color: AppColors.lightBackground,
-                      height: 100,
-                      width: 100,
-                    );
-                  });
-            },
-            icon: const Icon(Icons.more_vert),
-          ),
+          const MainOptionsButton()
         ],
         automaticallyImplyLeading: false,
         title: const Text('Pedidos'),
@@ -184,7 +209,7 @@ class _PedidosPageState extends State<PedidosPage> {
                           ElevatedButton(
                             onPressed: () {
                               setState(() {
-                                _vendasFuture = vendaCtr.getVendas();
+                                _vendasFuture = _vendaController.getVendas();
                               });
                             },
                             child: const Text('Tentar novamente'),
@@ -228,7 +253,7 @@ class _PedidosPageState extends State<PedidosPage> {
                             ).then(
                               (_) => setState(
                                 () {
-                                  _vendasFuture = vendaCtr.getVendas(
+                                  _vendasFuture = _vendaController.getVendas(
                                       pesquisa: _pesquisaCtr.text,
                                       filtros: _filtros);
                                 },

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/model/cliente.dart';
+import 'package:mobile_sales/view/pages/cliente_info_page.dart';
 import 'package:mobile_sales/view/widgets/cliente_card.dart';
 import 'package:mobile_sales/view/widgets/loading_error.dart';
+import 'package:mobile_sales/view/widgets/main_options_button.dart';
 
 class ClientesPage extends StatefulWidget {
   const ClientesPage({super.key});
@@ -17,6 +19,26 @@ class _ClientesPageState extends State<ClientesPage> {
 
   late Future<List<Cliente>> _clientesFuture;
 
+  void handleAddBtnPress() async {
+    final novoCliente = Cliente(
+      cliId: 0,
+      cliCnpj: '',
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ClienteInfoPage(cliente: novoCliente),
+      ),
+    ).then(
+      (_) => setState(
+        () {
+          _clientesFuture = _clienteController.getClientes(_clienteCte.text);
+        },
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -30,16 +52,7 @@ class _ClientesPageState extends State<ClientesPage> {
         centerTitle: false,
         actions: [
           ElevatedButton(
-            onPressed: () {
-              // Navigator.pushNamed(context, '/novo_pedido').then(
-              //   (_) => setState(
-              //     () {
-              //       _vendasFuture = vendaCtr.getVendas(
-              //           pesquisa: _pesquisaCtr.text, filtros: _filtros);
-              //     },
-              //   ),
-              // );
-            },
+            onPressed: handleAddBtnPress,
             style: ElevatedButton.styleFrom(
               padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
               minimumSize: const Size(10, 10),
@@ -50,10 +63,7 @@ class _ClientesPageState extends State<ClientesPage> {
             ),
             child: const Text('Adicionar'),
           ),
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_vert),
-          ),
+          const MainOptionsButton(),
         ],
         automaticallyImplyLeading: false,
         title: const Text('Clientes'),
@@ -66,6 +76,12 @@ class _ClientesPageState extends State<ClientesPage> {
               children: [
                 Expanded(
                   child: TextField(
+                    onChanged: (_) {
+                      setState(() {
+                        _clientesFuture =
+                            _clienteController.getClientes(_clienteCte.text);
+                      });
+                    },
                     controller: _clienteCte,
                     decoration: const InputDecoration(
                       label: Text('Pesquisar'),
@@ -114,7 +130,20 @@ class _ClientesPageState extends State<ClientesPage> {
                         cidade: cliente.cliCidade ?? '',
                         uf: cliente.cliEstado ?? '',
                         cnpj: cliente.cliCnpj,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) =>
+                                      ClienteInfoPage(cliente: cliente))).then(
+                            (_) => setState(
+                              () {
+                                _clientesFuture = _clienteController
+                                    .getClientes(_clienteCte.text);
+                              },
+                            ),
+                          );
+                        },
                       );
                     },
                   );

@@ -41,6 +41,23 @@ class Utils {
     );
   }
 
+  String removeSpecialChars(String texto) {
+    if (texto.isEmpty) return texto;
+
+    var comAcentos =
+        'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
+    var semAcentos =
+        'AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz';
+
+    for (int i = 0; i < comAcentos.length; i++) {
+      texto = texto.replaceAll(comAcentos[i], semAcentos[i]);
+    }
+
+    texto = texto.replaceAll(RegExp(r'[^a-zA-Z0-9 ]'), '');
+
+    return texto;
+  }
+
   double calculaST(
     double valor,
     double aliqintra,

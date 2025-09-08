@@ -8,6 +8,7 @@ class ListSearchModal<T> extends StatefulWidget {
   final Function(int) onSelect;
   final String label;
   final bool? enabled;
+  final bool? enableSearch;
 
   const ListSearchModal({
     super.key,
@@ -17,6 +18,7 @@ class ListSearchModal<T> extends StatefulWidget {
     required this.onSelect,
     required this.label,
     required this.enabled,
+    this.enableSearch,
   });
 
   @override
@@ -29,11 +31,13 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
       isScrollControlled: true,
       context: context,
       builder: (context) => ListSearchContainer<T>(
-          data: widget.data,
-          extractName: widget.extractName,
-          selectedIndex: widget.selectedIndex,
-          onSelect: widget.onSelect,
-          label: widget.label),
+        data: widget.data,
+        extractName: widget.extractName,
+        selectedIndex: widget.selectedIndex,
+        onSelect: widget.onSelect,
+        label: widget.label,
+        enableSearch: widget.enableSearch ?? true,
+      ),
     );
   }
 
@@ -70,6 +74,7 @@ class ListSearchContainer<T> extends StatefulWidget {
   final int selectedIndex;
   final Function(int) onSelect;
   final String label;
+  final bool enableSearch;
 
   const ListSearchContainer({
     super.key,
@@ -78,6 +83,7 @@ class ListSearchContainer<T> extends StatefulWidget {
     required this.selectedIndex,
     required this.onSelect,
     required this.label,
+    required this.enableSearch,
   });
 
   @override
@@ -125,14 +131,16 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
               const SizedBox(
                 height: 10,
               ),
-              TextField(
-                onChanged: (_) => setState(() {}),
-                controller: _pesquisaCte,
-                decoration: const InputDecoration(
-                  label: Text('Pesquisar'),
-                  suffixIcon: Icon(Icons.search),
-                ),
-              ),
+              widget.enableSearch
+                  ? TextField(
+                      onChanged: (_) => setState(() {}),
+                      controller: _pesquisaCte,
+                      decoration: const InputDecoration(
+                        label: Text('Pesquisar'),
+                        suffixIcon: Icon(Icons.search),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
               const SizedBox(
                 height: 10,
               ),

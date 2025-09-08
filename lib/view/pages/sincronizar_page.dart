@@ -15,6 +15,7 @@ import 'package:mobile_sales/model/tabela.dart';
 import 'package:mobile_sales/model/tabela_preco.dart';
 import 'package:mobile_sales/model/tipo_entrega.dart';
 import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/widgets/CustomCheckBox.dart';
 
 class SincronizarPage extends StatefulWidget {
   const SincronizarPage({super.key});
@@ -450,48 +451,59 @@ class _SincronizarPageState extends State<SincronizarPage>
                     const SizedBox(
                       height: 10,
                     ),
-                    GestureDetector(
-                      onTap: primeiraSincronia || sincronizando
-                          ? null
-                          : () => {
-                                setState(() {
-                                  sincCompleta = !sincCompleta;
-                                })
-                              },
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Checkbox(
-                            fillColor: WidgetStateProperty.resolveWith(
-                              (states) {
-                                if (!states.contains(WidgetState.selected)) {
-                                  return null;
-                                } else {
-                                  return primeiraSincronia || sincronizando
-                                      ? AppColors.darkDisabled
-                                      : AppColors.primary;
-                                }
-                              },
-                            ),
-                            value: sincCompleta,
-                            onChanged: primeiraSincronia || sincronizando
-                                ? null
-                                : (value) => {
-                                      setState(() {
-                                        sincCompleta = value!;
-                                      })
-                                    },
-                          ),
-                          Text(
-                            style: TextStyle(
-                                color: primeiraSincronia || sincronizando
-                                    ? AppColors.lightDisabledText
-                                    : AppColors.lightPrimaryText),
-                            'Sincronia Completa',
-                          ),
-                        ],
-                      ),
-                    ),
+                    CustomCheckBox(
+                      value: sincCompleta,
+                      onChanged: (value) => setState(() {
+                        sincCompleta = value!;
+                      }),
+                      onTap: () => setState(() {
+                        sincCompleta = !sincCompleta;
+                      }),
+                      enabled: !(primeiraSincronia || sincronizando),
+                      label: 'Sincronia Completa',
+                    )
+                    // GestureDetector(
+                    //   onTap: primeiraSincronia || sincronizando
+                    //       ? null
+                    //       : () => {
+                    //             setState(() {
+                    //               sincCompleta = !sincCompleta;
+                    //             })
+                    //           },
+                    //   child: Row(
+                    //     mainAxisAlignment: MainAxisAlignment.center,
+                    //     children: [
+                    //       Checkbox(
+                    //         fillColor: WidgetStateProperty.resolveWith(
+                    //           (states) {
+                    //             if (!states.contains(WidgetState.selected)) {
+                    //               return null;
+                    //             } else {
+                    //               return primeiraSincronia || sincronizando
+                    //                   ? AppColors.darkDisabled
+                    //                   : AppColors.primary;
+                    //             }
+                    //           },
+                    //         ),
+                    //         value: sincCompleta,
+                    //         onChanged: primeiraSincronia || sincronizando
+                    //             ? null
+                    //             : (value) => {
+                    //                   setState(() {
+                    //                     sincCompleta = value!;
+                    //                   })
+                    //                 },
+                    //       ),
+                    //       Text(
+                    //         style: TextStyle(
+                    //             color: primeiraSincronia || sincronizando
+                    //                 ? AppColors.lightDisabledText
+                    //                 : AppColors.lightPrimaryText),
+                    //         'Sincronia Completa',
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

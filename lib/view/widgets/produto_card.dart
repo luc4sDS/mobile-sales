@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
-import 'package:mobile_sales/model/venda.dart';
-import 'package:mobile_sales/model/venda_item.dart';
-import 'package:mobile_sales/view/widgets/editar_item_modal.dart';
 
 class ProdutoCard extends StatelessWidget {
   final int codigo;
@@ -27,14 +24,14 @@ class ProdutoCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(),
       child: DecoratedBox(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           border: Border(
             bottom:
                 BorderSide(color: AppColors.lightSecondaryBackground, width: 1),
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.all(8),
+          padding: const EdgeInsets.all(8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 5,

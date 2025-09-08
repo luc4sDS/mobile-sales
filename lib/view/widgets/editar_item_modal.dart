@@ -6,6 +6,8 @@ import 'package:mobile_sales/controller/produto_st_controller.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/widgets/CustomCheckBox.dart';
+import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
 
 class UltimasVendas {
@@ -63,7 +65,8 @@ class _EditarItemModalState extends State<EditarItemModal> {
   void initState() {
     super.initState();
 
-    _qtdCte.text = widget.item.vdiQtd.toStringAsFixed(2);
+    _qtdCte.text =
+        widget.item.vdiQtd == 0 ? '' : widget.item.vdiQtd.toStringAsFixed(2);
     _unitarioCte.text = widget.item.vdiUnit.toStringAsFixed(2);
     _descontoCte.text =
         ((widget.item.vdiDesc / widget.item.vdiPreco) * 100).toStringAsFixed(2);
@@ -207,7 +210,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      TextField(
+                                      CustomTextField(
                                         enabled: !readOnly,
                                         controller: _qtdCte,
                                         textAlign: TextAlign.end,
@@ -234,7 +237,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      TextField(
+                                      CustomTextField(
                                         enabled: !readOnly,
                                         controller: _unitarioCte,
                                         textAlign: TextAlign.end,
@@ -261,7 +264,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                           fontSize: 14,
                                         ),
                                       ),
-                                      TextField(
+                                      CustomTextField(
                                         enabled: !readOnly,
                                         controller: _descontoCte,
                                         textAlign: TextAlign.end,
@@ -274,11 +277,23 @@ class _EditarItemModalState extends State<EditarItemModal> {
                             ],
                           ),
                           Row(
-                            spacing: 10,
-                            mainAxisAlignment: MainAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ValorCard(label: 'Valor ST', valor: item.vdiVlst),
-                              ValorCard(label: 'Total', valor: item.vdiTotal),
+                              CustomCheckBox(
+                                value: true,
+                                onChanged: (_) {},
+                                label: 'Lance',
+                              ),
+                              Row(
+                                spacing: 10,
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  ValorCard(
+                                      label: 'Valor ST', valor: item.vdiVlst),
+                                  ValorCard(
+                                      label: 'Total', valor: item.vdiTotal),
+                                ],
+                              ),
                             ],
                           ),
                           Column(
@@ -293,7 +308,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                               ),
                               SizedBox(
                                 height: 150,
-                                child: TextField(
+                                child: CustomTextField(
                                   enabled: !readOnly,
                                   maxLines: null,
                                   minLines: 10,

@@ -26,6 +26,16 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
       ),
     ),
+    // iconButtonTheme: IconButtonThemeData(
+    //   style: ButtonStyle(iconColor: WidgetStateColor.resolveWith((state) {
+    //     return Colors.white;
+    //   }), backgroundColor: WidgetStateColor.resolveWith((state) {
+    //     if (state.contains(WidgetState.disabled))
+    //       return AppColors.lightDisabled;
+
+    //     return AppColors.primary;
+    //   })),
+    // ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.fromLTRB(25, 8, 25, 8),
@@ -43,32 +53,83 @@ class AppTheme {
       selectionColor: AppColors.grey.withValues(alpha: 0.5),
       selectionHandleColor: AppColors.primary,
     ),
-    inputDecorationTheme: const InputDecorationTheme(
+    listTileTheme: const ListTileThemeData(
+      contentPadding: EdgeInsets.all(5),
+      dense: true,
+      minTileHeight: 0,
+      minLeadingWidth: 0,
+      horizontalTitleGap: 0,
+    ),
+    expansionTileTheme: ExpansionTileThemeData(
+      tilePadding: const EdgeInsets.symmetric(horizontal: 8),
+      iconColor: AppColors.lighSecondaryText,
+      collapsedIconColor: AppColors.lighSecondaryText,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        side: BorderSide(
+          width: 1,
+          color: AppColors.lighSecondaryText.withValues(alpha: 0.4),
+        ),
+      ),
+      collapsedShape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        side: BorderSide(
+          width: 1,
+          color: AppColors.lighSecondaryText.withValues(alpha: 0.4),
+        ),
+      ),
+    ),
+    popupMenuTheme: PopupMenuThemeData(
+      color: AppColors.lightBackground,
+      shadowColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        side: BorderSide(
+          width: 1,
+          color: AppColors.lighSecondaryText.withAlpha(160),
+        ),
+      ),
+    ),
+    inputDecorationTheme: InputDecorationTheme(
       isDense: true,
+      labelStyle: WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return const TextStyle(color: AppColors.lightPrimaryText);
+        }
+
+        return const TextStyle(color: AppColors.lightPrimaryText);
+      }),
+      hintStyle: WidgetStateTextStyle.resolveWith((Set<WidgetState> states) {
+        if (states.contains(WidgetState.disabled)) {
+          return const TextStyle(color: AppColors.lightPrimaryText);
+        }
+
+        return const TextStyle(color: AppColors.lightPrimaryText);
+      }),
       fillColor: AppColors.lightSecondaryBackground,
       filled: true,
-      floatingLabelStyle: TextStyle(color: AppColors.lighSecondaryText),
-      disabledBorder: UnderlineInputBorder(
+      floatingLabelStyle: const TextStyle(color: AppColors.lighSecondaryText),
+      disabledBorder: const UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(
           color: Colors.transparent,
         ),
       ),
-      enabledBorder: UnderlineInputBorder(
+      enabledBorder: const UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(
           color: Colors.transparent,
         ),
       ),
-      focusedBorder: UnderlineInputBorder(
+      focusedBorder: const UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(color: Colors.transparent, width: 1.5),
       ),
-      errorBorder: UnderlineInputBorder(
+      errorBorder: const UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(color: Colors.transparent, width: 1.5),
       ),
-      focusedErrorBorder: UnderlineInputBorder(
+      focusedErrorBorder: const UnderlineInputBorder(
         borderRadius: BorderRadius.all(Radius.circular(6)),
         borderSide: BorderSide(color: Colors.transparent, width: 1.5),
         // ),

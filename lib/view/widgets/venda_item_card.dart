@@ -67,21 +67,45 @@ class VendaItemCard extends StatelessWidget {
               const SizedBox(height: 5),
               Row(
                 children: [
-                  const Text(
-                    'Qtd: ',
-                    style: TextStyle(color: AppColors.lighSecondaryText),
+                  Expanded(
+                    child: Wrap(
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Qtd: ',
+                              style:
+                                  TextStyle(color: AppColors.lighSecondaryText),
+                            ),
+                            Text(vdiQtd.toString()),
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              ' Unit.: ',
+                              style:
+                                  TextStyle(color: AppColors.lighSecondaryText),
+                            ),
+                            Text('R\$ ${vdiUnit.toStringAsFixed(2)}'),
+                          ],
+                        ),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              ' Total: ',
+                              style:
+                                  TextStyle(color: AppColors.lighSecondaryText),
+                            ),
+                            Text('R\$ ${vdiTotal.toStringAsFixed(2)}'),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  Text(vdiQtd.toString()),
-                  const Text(
-                    ' Unit.: ',
-                    style: TextStyle(color: AppColors.lighSecondaryText),
-                  ),
-                  Text('R\$ ${vdiUnit.toStringAsFixed(2)}'),
-                  const Text(
-                    ' Total: ',
-                    style: TextStyle(color: AppColors.lighSecondaryText),
-                  ),
-                  Text('R\$ ${vdiTotal.toStringAsFixed(2)}'),
                 ],
               )
             ],

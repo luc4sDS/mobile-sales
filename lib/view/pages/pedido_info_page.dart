@@ -1,11 +1,9 @@
 import 'dart:async';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/forma_pagamento_controller.dart';
 import 'package:mobile_sales/controller/meio_pagamento_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
-import 'package:mobile_sales/controller/sincronia_controller.dart';
 import 'package:mobile_sales/controller/tipo_entrega_controller.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
@@ -17,6 +15,7 @@ import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/adicionar_produto_modal.dart';
+import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/editar_item_modal.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
@@ -54,7 +53,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   final _tipoEntregaController = TipoEntregaController();
   final _vendaController = VendasController();
 
-  final _pesquisaProdutosCte = TextEditingController();
   final _emailCte = TextEditingController();
 
   int getIndexByFieldValue<T, A>(
@@ -84,6 +82,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       venda = _vendaController.totalizar(venda);
       await _vendaController.salvarVenda(venda);
       setState(() {});
+      if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
         Utils().customShowDialog('ERRO', 'Erro!', e, context);
@@ -98,13 +97,14 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       // Validar
       if (item.vdiQtd == 0) erros.add('Quantidade precisa ser maior que zero');
       if (item.vdiUnit < item.vdiPmin) {
-        erros.add('Preço unitário menor que o permitido');
+        erros.add(
+            'Preço unitário menor que o permitido: ${item.vdiPmin.toStringAsFixed(2)}');
       }
 
       if (erros.isNotEmpty) {
         if (mounted) {
           Utils().customShowDialog(
-              'ERRO', 'Erro ao adicionar item', erros.join('\n'), context);
+              'ERRO', 'Erro ao adicionar item', erros.join('\n\n'), context);
         }
         return;
       }
@@ -114,10 +114,27 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       setState(() {
         venda = vendaAtualizada;
       });
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: AppColors.lightSnackBarBg,
+            content: Text(
+              'Produto adicionado com sucesso!',
+              style: TextStyle(color: AppColors.lightSnackBarText),
+            ),
+          ),
+        );
+      }
     } catch (e) {
       if (mounted) {
         Utils().customShowDialog(
-            'ERRO', 'Erro ao adicionar item', e.toString(), context);
+          'ERRO',
+          'Erro ao adicionar item',
+          e.toString(),
+          context,
+        );
       }
     }
   }
@@ -358,7 +375,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                         .lighSecondaryText,
                                                   ),
                                                 ),
-                                                TextField(
+                                                CustomTextField(
                                                   enabled:
                                                       venda.vndEnviado == 'N',
                                                   onChanged: (_) =>

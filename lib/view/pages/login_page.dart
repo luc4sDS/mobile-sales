@@ -1,16 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:mobile_sales/controller/cliente_contato_controller.dart';
-import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
-import 'package:mobile_sales/controller/sincronia_controller.dart';
 import 'package:mobile_sales/core/assets/app_images.dart';
+import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/database/database_services.dart';
-import 'package:mobile_sales/model/cliente.dart';
-import 'package:mobile_sales/model/cliente_contato.dart';
-import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/utils/utils.dart';
-import 'package:sqflite/sqflite.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -67,9 +60,9 @@ class _LoginPageState extends State<LoginPage> {
         .add(Duration(hours: parametrosCtrl.parametros!.parSincronia!));
 
     if (dataSinc.isBefore(DateTime.now()) && await Utils.internet()) {
-      Navigator.pushNamed(context, '/sincronizar');
+      if (mounted) Navigator.pushNamed(context, '/sincronizar');
     } else {
-      Navigator.pushNamed(context, '/main');
+      if (mounted) Navigator.pushNamed(context, '/main');
     }
 
     setState(() {
@@ -111,7 +104,9 @@ class _LoginPageState extends State<LoginPage> {
                             label: Text('Usuário'),
                             suffixIcon: Padding(
                               padding: EdgeInsets.fromLTRB(0, 0, 10, 0),
-                              child: Icon(Icons.person),
+                              child: Icon(
+                                Icons.person,
+                              ),
                             ),
                           ),
                         ),
@@ -129,9 +124,11 @@ class _LoginPageState extends State<LoginPage> {
                                     escondeSenha = !escondeSenha;
                                   });
                                 },
-                                icon: Icon(escondeSenha
-                                    ? Icons.visibility_off
-                                    : Icons.visibility),
+                                icon: Icon(
+                                  escondeSenha
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
                               ),
                             ),
                           ),

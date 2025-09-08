@@ -7,7 +7,12 @@ import 'package:mobile_sales/view/pages/pedido_info_page.dart';
 import 'package:mobile_sales/view/widgets/cliente_card.dart';
 
 class NovoPedidoPage extends StatefulWidget {
-  const NovoPedidoPage({super.key});
+  final void Function(Cliente) cliCardTap;
+
+  const NovoPedidoPage({
+    super.key,
+    required this.cliCardTap,
+  });
 
   @override
   State<NovoPedidoPage> createState() => _NovoPedidoPageState();
@@ -30,22 +35,28 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
       final novoPedido = await _vendaController.novoPedido(cliId);
 
       if (novoPedido == null) {
-        Navigator.of(context).pop();
-        Utils().customShowDialog(
-            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog(
+              'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        }
         return;
       } else {
-        Navigator.of(context).pop();
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute<void>(
-              builder: (context) => PedidoInfoPage(venda: novoPedido)),
-        );
+        if (mounted) {
+          Navigator.of(context).pop();
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(
+                builder: (context) => PedidoInfoPage(venda: novoPedido)),
+          );
+        }
       }
     } catch (e) {
-      Navigator.of(context).pop();
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+      if (mounted) {
+        Navigator.of(context).pop();
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+      }
     }
   }
 
@@ -133,33 +144,12 @@ class _NovoPedidoPageState extends State<NovoPedidoPage> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 8.0),
                           child: ClienteCard(
-                            hideTextOverflow: false,
                             id: cliente.cliId ?? 0,
                             razao: cliente.cliRazao ?? '',
                             cidade: cliente.cliCidade ?? '',
                             uf: cliente.cliEstado ?? '',
                             cnpj: cliente.cliCnpj,
-                            onTap: () {
-                              Utils().customShowDialog(
-                                'CONFIRMAR',
-                                'Confirmar',
-                                'Criar novo pedido para o cliente ${cliente.cliRazao}?',
-                                context,
-                                actions: [
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      handleCriarPedido(cliente.cliId);
-                                    },
-                                    child: Text('Sim'),
-                                  ),
-                                  TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Não'))
-                                ],
-                              );
-                            },
+                            onTap: () => widget.cliCardTap(cliente),
                           ),
                         );
                       },
