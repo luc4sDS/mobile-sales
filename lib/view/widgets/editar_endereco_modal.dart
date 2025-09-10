@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/cliente_endereco.dart';
 import 'package:mobile_sales/utils/consts.dart';
+import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
 
 class EditarEnderecoModal extends StatefulWidget {
@@ -34,6 +35,7 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
   final _cepCte = TextEditingController();
   final _cidadeCte = TextEditingController();
   final _complCte = TextEditingController();
+  final _descCte = TextEditingController();
 
   @override
   void initState() {
@@ -46,6 +48,7 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
     _cepCte.text = endereco.clieCep ?? '';
     _cidadeCte.text = endereco.clieCidade ?? '';
     _complCte.text = endereco.clieCompl ?? '';
+    _descCte.text = endereco.clieDescricao ?? '';
 
     selectedEstadoIndex = estados.indexOf(endereco.clieEstado ?? '');
   }
@@ -250,6 +253,27 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                               ),
                             ],
                           ),
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Descrição',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.lighSecondaryText,
+                                ),
+                              ),
+                              SizedBox(
+                                height: 150,
+                                child: CustomTextField(
+                                  controller: _descCte,
+                                  maxLines: null,
+                                  minLines: 10,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),
@@ -284,6 +308,7 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                             clieCep: _cepCte.text.trim().toUpperCase(),
                             clieCidade: _cidadeCte.text.trim().toUpperCase(),
                             clieCompl: _complCte.text.trim().toUpperCase(),
+                            clieDescricao: _descCte.text.trim(),
                             clieEstado: selectedEstadoIndex == -1
                                 ? ''
                                 : estados[selectedEstadoIndex],

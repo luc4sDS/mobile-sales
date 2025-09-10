@@ -81,6 +81,25 @@ class Cliente {
     };
   }
 
+  Map<String, dynamic> toMapApi(int vendedor) {
+    return {
+      'NEW_CLI_CNPJ': cliCnpj,
+      'NEW_CLI_INSC': cliInsc,
+      'NEW_CLI_RAZAO': cliRazao,
+      'NEW_CLI_FANTASIA': cliFantasia,
+      'NEW_CLI_ENDERECO': cliEndereco,
+      'NEW_CLI_NUMERO': cliNumero,
+      'NEW_CLI_BAIRRO': cliBairro,
+      'NEW_CLI_CIDADE': cliCidade,
+      'NEW_CLI_ESTADO': cliEstado,
+      'NEW_CLI_COMPL': cliCompl,
+      'NEW_CLI_CEP': cliCep,
+      'NEW_CLI_TELEFONE': cliTelefone,
+      'NEW_CLI_EMAIL': cliEmail,
+      'NEW_CLI_VENDEDOR': vendedor,
+    };
+  }
+
   Cliente copyWith({
     int? cliId,
     String? cliCnpj,

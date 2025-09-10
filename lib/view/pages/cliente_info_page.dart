@@ -7,6 +7,7 @@ import 'package:mobile_sales/model/cliente_contato.dart';
 import 'package:mobile_sales/model/cliente_endereco.dart';
 import 'package:mobile_sales/utils/consts.dart';
 import 'package:mobile_sales/utils/utils.dart';
+import 'package:mobile_sales/view/widgets/alert_dialog.dart';
 import 'package:mobile_sales/view/widgets/cliente_contato_card.dart';
 import 'package:mobile_sales/view/widgets/cliente_endereco_card.dart';
 import 'package:mobile_sales/view/widgets/editar_endereco_modal.dart';
@@ -55,6 +56,20 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
   late Future<List<ClienteContato>> _futureContatos;
   late Future<List<ClienteEndereco>> _futureEnderecos;
 
+  @override
+  void initState() {
+    super.initState();
+
+    cliente = widget.cliente;
+
+    clienteNovo = cliente.cliCnpj.isEmpty;
+
+    _futureContatos = _cliController.getClienteContatos(cliente.cliCnpj);
+    _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj);
+
+    carregaTextFields();
+  }
+
   Future<List<String>> validaCliente() async {
     final List<String> erros = [];
 
@@ -79,6 +94,39 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
     }
 
     return erros;
+  }
+
+  void handleDeleteEndereco(int seq) async {
+    try {
+      final res = await _cliController.deleteEnderecoBySeq(seq);
+
+      if (res > 0) {
+        if (mounted) Navigator.of(context).pop();
+
+        setState(() {
+          _futureEnderecos =
+              _cliController.getClienteEnderecos(cliente.cliCnpj);
+        });
+      } else {
+        if (mounted) {
+          Utils().customShowDialog(
+            'ERRO',
+            'Erro!',
+            'Não foi possível remover endereco.',
+            context,
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        Utils().customShowDialog(
+          'ERRO',
+          'Erro!',
+          'Não foi possível remover endereco: $e',
+          context,
+        );
+      }
+    }
   }
 
   void consultarCnpj() async {
@@ -125,8 +173,57 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
         ),
       ],
     ).then((value) {
-      if (value ?? false) Navigator.of(context).pop();
+      if (value ?? false) {
+        Future.delayed(Duration.zero, () {
+          if (mounted) {
+            Navigator.of(context).pop();
+          }
+        });
+      }
     });
+  }
+
+  bool clienteChanged() {
+    if (clienteNovo) return true;
+
+    if (_isDifferent(cliente.cliRazao, _razaoCte)) return true;
+    if (_isDifferent(cliente.cliFantasia, _fantasiaCte)) return true;
+    if (_isDifferent(cliente.cliInsc, _inscCte)) return true;
+    if (_isDifferent(cliente.cliTelefone, _telefoneCte)) return true;
+    if (_isDifferent(cliente.cliEmail, _emailCte)) return true;
+    if (_isDifferent(cliente.cliEndereco, _enderecoCte)) return true;
+    if (_isDifferent(cliente.cliNumero, _numeroCte)) return true;
+    if (_isDifferent(cliente.cliBairro, _bairroCte)) return true;
+    if (_isDifferent(cliente.cliCep, _cepCte)) return true;
+    if (_isDifferent(cliente.cliCidade, _cidadeCte)) return true;
+    if (_isDifferent(cliente.cliCompl, _complCte)) return true;
+
+    if ((cliente.cliEstado ?? '') != estados[selectedEstado]) return true;
+
+    return false;
+  }
+
+  bool _isDifferent(String? originalValue, TextEditingController controller) {
+    final originalTrimmed = originalValue?.trim() ?? '';
+    final controllerTrimmed = controller.text.trim();
+    return originalTrimmed != controllerTrimmed;
+  }
+
+  void carregaTextFields() {
+    _cnpjCte.text = cliente.cliCnpj;
+    _razaoCte.text = cliente.cliRazao ?? '';
+    _fantasiaCte.text = cliente.cliFantasia ?? '';
+    _inscCte.text = cliente.cliInsc ?? '';
+    _telefoneCte.text = cliente.cliTelefone ?? '';
+    _emailCte.text = cliente.cliEmail ?? '';
+    _enderecoCte.text = cliente.cliEndereco ?? '';
+    _numeroCte.text = cliente.cliNumero ?? '';
+    _bairroCte.text = cliente.cliBairro ?? '';
+    _cepCte.text = cliente.cliCep ?? '';
+    _cidadeCte.text = cliente.cliCidade ?? '';
+    _complCte.text = cliente.cliCompl ?? '';
+
+    selectedEstado = estados.indexOf(cliente.cliEstado ?? '');
   }
 
   void handleSave() async {
@@ -166,7 +263,6 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
       cliBairro: _bairroCte.text.trim().toUpperCase(),
       cliEmail: _emailCte.text.trim(),
       cliTelefone: _telefoneCte.text.trim(),
-      cliEnvia: 'N',
       cliTabela: 0,
     );
 
@@ -185,35 +281,52 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
           return;
         }
-        final novoClienteId = await _cliController.insertCliente(novoCliente);
 
-        if (novoClienteId > 0) {
-          setState(() {
-            cliente = novoCliente;
-          });
+        final enviarClienteRes = await _cliController.enviar(novoCliente);
 
-          if (mounted) {
-            Utils().customShowDialog(
-                'OK', 'Cliente cadastrado com sucesso!', '', context);
-          }
+        if (enviarClienteRes == '') {
+          cliente = novoCliente.copyWith(cliEnvia: 'S');
         } else {
+          cliente = novoCliente.copyWith(cliEnvia: 'N');
           if (mounted) {
-            Utils().customShowDialog('ERRO', 'Erro!',
-                'Não foi possível cadastrar o cliente.', context);
+            Utils()
+                .customShowDialog('ERRO', 'Erro!', enviarClienteRes, context);
           }
+        }
+
+        _cliController.insertCliente(cliente);
+
+        if (mounted) {
+          Utils().customShowDialog(
+              'OK', 'Cliente cadastrado com sucesso!', '', context);
         }
 
         setState(() {
           clienteNovo = false;
         });
       } else {
-        final res = await _cliController.updateCliente(novoCliente);
+        final enviarClienteRes = await _cliController.enviar(cliente);
 
-        if (res == 1) {
+        if (enviarClienteRes == '') {
+          cliente = novoCliente.copyWith(cliEnvia: 'S');
+        } else {
+          cliente = novoCliente.copyWith(cliEnvia: 'N');
+
           if (mounted) {
-            Utils().customShowDialog(
-                'OK', 'Cliente salvo com sucesso!', '', context);
+            Utils()
+                .customShowDialog('ERRO', 'Erro!', enviarClienteRes, context);
           }
+        }
+
+        _cliController.updateCliente(cliente);
+
+        setState(() {
+          carregaTextFields();
+        });
+
+        if (mounted) {
+          Utils().customShowDialog(
+              'OK', 'Cliente salvo com sucesso!', '', context);
         }
       }
 
@@ -287,49 +400,74 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
   }
 
   @override
-  void initState() {
-    super.initState();
-
-    cliente = widget.cliente;
-
-    clienteNovo = cliente.cliCnpj.isEmpty;
-
-    _futureContatos = _cliController.getClienteContatos(cliente.cliCnpj);
-    _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj);
-
-    _cnpjCte.text = cliente.cliCnpj;
-    _razaoCte.text = cliente.cliRazao ?? '';
-    _fantasiaCte.text = cliente.cliFantasia ?? '';
-    _inscCte.text = cliente.cliInsc ?? '';
-    _telefoneCte.text = cliente.cliTelefone ?? '';
-    _emailCte.text = cliente.cliEmail ?? '';
-    _enderecoCte.text = cliente.cliEndereco ?? '';
-    _numeroCte.text = cliente.cliNumero ?? '';
-    _bairroCte.text = cliente.cliBairro ?? '';
-    _cepCte.text = cliente.cliCep ?? '';
-    _cidadeCte.text = cliente.cliCidade ?? '';
-    _complCte.text = cliente.cliCompl ?? '';
-
-    for (var i = 0; i < estados.length; i++) {
-      if (cliente.cliEstado == estados[i]) {
-        selectedEstado = i;
-        break;
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return PopScope(
       canPop: false,
-      onPopInvokedWithResult: handlePop,
+      onPopInvokedWithResult: (bool didPop, bool? result) async {
+        if (didPop) return;
+
+        if (!clienteChanged()) {
+          Navigator.of(context).pop();
+          return;
+        }
+
+        final shouldPop = await showDialog<bool>(
+          context: context,
+          builder: (context) => CustomAlertDialog(
+            tipo: 'CONFIRMAR',
+            titulo: const Text('Confirmar'),
+            content: const Text('Descartar alterações?'),
+            actions: [
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Sim'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Não'),
+              )
+            ],
+          ),
+        );
+
+        if (shouldPop == true && mounted) {
+          Navigator.of(context).pop();
+        }
+      },
       child: Scaffold(
           appBar: AppBar(
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 15.0),
                 child: ElevatedButton(
-                  onPressed: saving ? null : handleSave,
+                  onPressed: saving
+                      ? null
+                      : () {
+                          Utils().customShowDialog(
+                            'CONFIRMAR',
+                            'Confirmar',
+                            'Salvar e enviar alterações?',
+                            context,
+                            actions: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(true);
+                                },
+                                child: const Text('Sim'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop(false);
+                                },
+                                child: const Text('Não'),
+                              )
+                            ],
+                          ).then((value) {
+                            final result = value ?? false;
+
+                            if (result) handleSave();
+                          });
+                        },
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
                     minimumSize: const Size(10, 10),
@@ -779,42 +917,46 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
                   child: Column(
                     spacing: 10,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              final endereco = ClienteEndereco(
-                                clieSeq: 0,
-                                clieCli: cliente.cliCnpj,
-                              );
+                      !clienteNovo
+                          ? Row(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: () {
+                                    final endereco = ClienteEndereco(
+                                      clieSeq: 0,
+                                      clieCli: cliente.cliCnpj,
+                                    );
 
-                              showModalBottomSheet(
-                                backgroundColor: Colors.transparent,
-                                isScrollControlled: true,
-                                useSafeArea: true,
-                                context: context,
-                                builder: (context) {
-                                  return EditarEnderecoModal(
-                                    onSave: (e) => handleInsertEndereco(e),
-                                    endereco: endereco,
-                                  );
-                                },
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
-                              minimumSize: const Size(10, 10),
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'poppins',
-                              ),
-                            ),
-                            child: const Text('Adicionar'),
-                          ),
-                        ],
-                      ),
+                                    showModalBottomSheet(
+                                      backgroundColor: Colors.transparent,
+                                      isScrollControlled: true,
+                                      useSafeArea: true,
+                                      context: context,
+                                      builder: (context) {
+                                        return EditarEnderecoModal(
+                                          onSave: (e) =>
+                                              handleInsertEndereco(e),
+                                          endereco: endereco,
+                                        );
+                                      },
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    padding:
+                                        const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                                    minimumSize: const Size(10, 10),
+                                    textStyle: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      fontFamily: 'poppins',
+                                    ),
+                                  ),
+                                  child: const Text('Adicionar'),
+                                ),
+                              ],
+                            )
+                          : const SizedBox.shrink(),
                       Expanded(
                         child: FutureBuilder(
                             future: _futureEnderecos,
@@ -850,7 +992,8 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
                                             context: context,
                                             builder: (context) {
                                               return EditarEnderecoModal(
-                                                onDelete: (seq) => print(seq),
+                                                onDelete: (seq) =>
+                                                    handleDeleteEndereco(seq),
                                                 onSave: (e) =>
                                                     handleSaveEndereco(e),
                                                 endereco: enderecos[i],
@@ -870,25 +1013,26 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
                   child: Column(
                     spacing: 10,
                     children: [
-                      Row(
+                      const Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
-                          ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
-                              minimumSize: const Size(10, 10),
-                              textStyle: const TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'poppins',
-                              ),
-                            ),
-                            child: const Text('Adicionar'),
-                          ),
+                          // ElevatedButton(
+                          //   onPressed: () {},
+                          //   style: ElevatedButton.styleFrom(
+                          //     padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                          //     minimumSize: const Size(10, 10),
+                          //     textStyle: const TextStyle(
+                          //       fontSize: 15,
+                          //       fontWeight: FontWeight.w500,
+                          //       fontFamily: 'poppins',
+                          //     ),
+                          //   ),
+                          //   child: const Text('Adicionar'),
+                          // ),
                         ],
                       ),
-                      FutureBuilder(
+                      Expanded(
+                        child: FutureBuilder(
                           future: _futureContatos,
                           builder: (context, snapshot) {
                             if (snapshot.connectionState ==
@@ -898,25 +1042,31 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
                             if (snapshot.hasError) {
                               return Center(
-                                  child: Text(
-                                      'Erro ao carregar contatos: ${snapshot.error}'));
+                                child: Text(
+                                  'Erro ao carregar contatos: ${snapshot.error}',
+                                ),
+                              );
                             }
 
                             if (!snapshot.hasData || snapshot.data!.isEmpty) {
                               return const Center(
-                                  child: Text(
-                                      'Nenhum contato cadastrado para este cliente'));
+                                child: Text(
+                                  'Nenhum contato cadastrado para este cliente',
+                                ),
+                              );
                             }
 
                             final contatos = snapshot.data!;
 
                             return ListView.builder(
-                                itemCount: contatos.length,
-                                itemBuilder: (context, i) {
-                                  return ClienteContatoCard(
-                                      contato: contatos[i]);
-                                });
-                          }),
+                              itemCount: contatos.length,
+                              itemBuilder: (context, i) {
+                                return ClienteContatoCard(contato: contatos[i]);
+                              },
+                            );
+                          },
+                        ),
+                      ),
                     ],
                   ),
                 )

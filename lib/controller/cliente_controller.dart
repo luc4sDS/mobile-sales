@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/cliente.dart';
 import 'package:mobile_sales/model/cliente_contato.dart';
@@ -122,6 +123,41 @@ class ClienteController {
     enderecoMap.remove('CLIE_SEQ');
 
     return await db.insert('CLIENTES_ENDERECOS', enderecoMap);
+  }
+
+  Future<String> enviar(Cliente cliente) async {
+    final parametrosCtr = ParametrosController();
+    await parametrosCtr.getParametros();
+
+    final dio = Dio();
+
+    if (parametrosCtr.parametros == null ||
+        (parametrosCtr.parametros?.parCusu ?? 0) == 0) {
+      return 'Parametros não encontrados';
+    }
+
+    final res = await dio.put(
+      'https://${parametrosCtr.parametros?.parEndIPProd ?? ''}/cliente_novo',
+      data: cliente.toMapApi(parametrosCtr.parametros!.parCusu!),
+    );
+
+    final resMap = res.data as Map<String, dynamic>;
+
+    if (resMap['status'] == 100 || resMap['status'] == -1) {
+      return '';
+    } else {
+      return resMap['motivo'];
+    }
+  }
+
+  Future<int> deleteEnderecoBySeq(int seq) async {
+    final db = await DatabaseService().database;
+
+    return await db.delete(
+      'CLIENTES_ENDERECOS',
+      where: 'CLIE_SEQ = ?',
+      whereArgs: [seq],
+    );
   }
 
   Future<int> updateEndereco(ClienteEndereco endereco) async {

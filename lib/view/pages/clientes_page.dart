@@ -23,6 +23,7 @@ class _ClientesPageState extends State<ClientesPage> {
     final novoCliente = Cliente(
       cliId: 0,
       cliCnpj: '',
+      cliEnvia: 'S',
     );
 
     Navigator.push(
