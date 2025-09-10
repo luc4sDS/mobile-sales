@@ -17,8 +17,12 @@ class ClienteController {
     int statusCode = res.statusCode ?? 0;
 
     if (statusCode >= 200 && statusCode <= 210) {
-      return ConsultaCnpjResult.fromMap(
-          res.data['result'] as Map<String, dynamic>);
+      if (res.data['result'] != null) {
+        return ConsultaCnpjResult.fromMap(
+            res.data['result'] as Map<String, dynamic>);
+      } else {
+        return ConsultaCnpjResult();
+      }
     } else {
       return ConsultaCnpjResult();
     }
@@ -65,6 +69,15 @@ class ClienteController {
     return Cliente.fromMap(res[0]);
   }
 
+  Future<bool> cnpjExiste(String cnpj) async {
+    final db = await DatabaseService().database;
+
+    final res = await db
+        .rawQuery('SELECT CLI_CNPJ FROM CLIENTES WHERE CLI_CNPJ=?', [cnpj]);
+
+    return res.isNotEmpty;
+  }
+
   Future<List<ClienteContato>> getClienteContatos(String cliCnpj) async {
     final db = await DatabaseService().database;
 
@@ -100,5 +113,21 @@ class ClienteController {
         where: 'CLI_CNPJ = ?', whereArgs: [cliente.cliCnpj]);
 
     return res;
+  }
+
+  Future<int> insertEndereco(ClienteEndereco endereco) async {
+    final db = await DatabaseService().database;
+
+    final enderecoMap = endereco.toMap();
+    enderecoMap.remove('CLIE_SEQ');
+
+    return await db.insert('CLIENTES_ENDERECOS', enderecoMap);
+  }
+
+  Future<int> updateEndereco(ClienteEndereco endereco) async {
+    final db = await DatabaseService().database;
+
+    return await db.update('CLIENTES_ENDERECOS', endereco.toMap(),
+        where: 'CLIE_SEQ=?', whereArgs: [endereco.clieSeq]);
   }
 }

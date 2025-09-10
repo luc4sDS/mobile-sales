@@ -18,9 +18,9 @@ class Utils {
     }
   }
 
-  void customShowDialog(String tipo, titulo, content, BuildContext context,
-      {List<Widget>? actions}) {
-    showDialog(
+   Future<bool?> customShowDialog(String tipo, titulo, content, BuildContext context,
+      {List<Widget>? actions}) async {
+    return await showDialog(
       context: context,
       builder: (_) {
         return CustomAlertDialog(

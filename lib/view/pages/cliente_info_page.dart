@@ -5,9 +5,11 @@ import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/cliente.dart';
 import 'package:mobile_sales/model/cliente_contato.dart';
 import 'package:mobile_sales/model/cliente_endereco.dart';
+import 'package:mobile_sales/utils/consts.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/cliente_contato_card.dart';
 import 'package:mobile_sales/view/widgets/cliente_endereco_card.dart';
+import 'package:mobile_sales/view/widgets/editar_endereco_modal.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
 
 class ClienteInfoPage extends StatefulWidget {
@@ -24,41 +26,14 @@ class ClienteInfoPage extends StatefulWidget {
 
 class _ClienteInfoPageState extends State<ClienteInfoPage> {
   //Constantes
-  static const List<String> estados = [
-    'AC', // Acre
-    'AL', // Alagoas
-    'AP', // Amapá
-    'AM', // Amazonas
-    'BA', // Bahia
-    'CE', // Ceará
-    'DF', // Distrito Federal
-    'ES', // Espírito Santo
-    'GO', // Goiás
-    'MA', // Maranhão
-    'MT', // Mato Grosso
-    'MS', // Mato Grosso do Sul
-    'MG', // Minas Gerais
-    'PA', // Pará
-    'PB', // Paraíba
-    'PR', // Paraná
-    'PE', // Pernambuco
-    'PI', // Piauí
-    'RJ', // Rio de Janeiro
-    'RN', // Rio Grande do Norte
-    'RS', // Rio Grande do Sul
-    'RO', // Rondônia
-    'RR', // Roraima
-    'SC', // Santa Catarina
-    'SP', // São Paulo
-    'SE', // Sergipe
-    'TO', // Tocantins
-  ];
+  static const estados = Consts.estados;
 
   //Variaveis
   late Cliente cliente;
   int selectedEstado = -1;
   bool saving = false;
   bool clienteNovo = false;
+  bool consultandoCnpj = false;
 
   //Controllers
   final _cliController = ClienteController();
@@ -107,8 +82,14 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
   }
 
   void consultarCnpj() async {
-    final result = await _cliController.consultaCnpj(cliente.cliCnpj);
+    setState(() {
+      consultandoCnpj = true;
+    });
 
+    final result = await _cliController
+        .consultaCnpj(Utils().removeSpecialChars(_cnpjCte.text));
+
+    _cnpjCte.text = result.numeroDeInscricao ?? _cnpjCte.text;
     _razaoCte.text = result.nome ?? '';
     _fantasiaCte.text = result.fantasia ?? '';
     _telefoneCte.text = result.telefone ?? '';
@@ -120,12 +101,32 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
     _cidadeCte.text = result.municipio ?? '';
     _complCte.text = result.complemento ?? '';
 
-    for (var i = 0; i < estados.length; i++) {
-      if (estados[i] == (result.uf ?? '')) {
-        selectedEstado = i;
-        break;
-      }
-    }
+    selectedEstado = estados.indexOf(result.uf ?? '');
+
+    setState(() {
+      consultandoCnpj = false;
+    });
+  }
+
+  void handlePop(bool didPop, bool? data) {
+    Utils().customShowDialog(
+      'CONFIRMAR',
+      'Confirmar',
+      'Descartar alterações?',
+      context,
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(true),
+          child: const Text('Sim'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Não'),
+        ),
+      ],
+    ).then((value) {
+      if (value ?? false) Navigator.of(context).pop();
+    });
   }
 
   void handleSave() async {
@@ -147,7 +148,7 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
       return;
     }
 
-    final novoCliente = Cliente(
+    final novoCliente = cliente.copyWith(
       cliId: clienteNovo ? 0 : cliente.cliId,
       cliCnpj: Utils().removeSpecialChars(_cnpjCte.text.trim()).toUpperCase(),
       cliRazao: Utils().removeSpecialChars(_razaoCte.text.trim()).toUpperCase(),
@@ -171,11 +172,24 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
     try {
       if (clienteNovo) {
+        if (await _cliController
+            .cnpjExiste(Utils().removeSpecialChars(_cnpjCte.text))) {
+          if (mounted) {
+            Utils().customShowDialog('ERRO', 'Erro ao salvar!',
+                'O CPF/CNPJ já está cadastrado.', context);
+          }
+
+          setState(() {
+            saving = false;
+          });
+
+          return;
+        }
         final novoClienteId = await _cliController.insertCliente(novoCliente);
 
         if (novoClienteId > 0) {
           setState(() {
-            cliente = novoCliente.copyWith(cliId: novoClienteId);
+            cliente = novoCliente;
           });
 
           if (mounted) {
@@ -218,6 +232,60 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
     }
   }
 
+  void handleSaveEndereco(ClienteEndereco endereco) async {
+    if ((endereco.clieCidade ?? '').trim().isEmpty ||
+        (endereco.clieEstado ?? '').trim().isEmpty) {
+      Utils().customShowDialog('ERRO', 'Erro!',
+          'Os campos "Cidade" e "Estado" são obrigatórios.', context);
+      return;
+    }
+
+    try {
+      final res = await _cliController.updateEndereco(endereco);
+
+      if (res > 0) {
+        setState(() {
+          _futureEnderecos =
+              _cliController.getClienteEnderecos(cliente.cliCnpj);
+        });
+
+        if (mounted) Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro ao salvar endereço:', '$e', context);
+      }
+    }
+  }
+
+  void handleInsertEndereco(ClienteEndereco endereco) async {
+    if ((endereco.clieCidade ?? '').trim().isEmpty ||
+        (endereco.clieEstado ?? '').trim().isEmpty) {
+      Utils().customShowDialog('ERRO', 'Erro!',
+          'Os campos "Cidade" e "Estado" são obrigatórios.', context);
+      return;
+    }
+
+    try {
+      final res = await _cliController.insertEndereco(endereco);
+
+      if (res > 0) {
+        setState(() {
+          _futureEnderecos =
+              _cliController.getClienteEnderecos(cliente.cliCnpj);
+        });
+
+        if (mounted) Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        Utils()
+            .customShowDialog('ERRO', 'Erro ao criar endereço:', '$e', context);
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -252,551 +320,609 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 15.0),
-              child: ElevatedButton(
-                onPressed: saving ? null : handleSave,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
-                  minimumSize: const Size(10, 10),
-                  textStyle: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    fontFamily: 'poppins',
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: handlePop,
+      child: Scaffold(
+          appBar: AppBar(
+            actions: [
+              Padding(
+                padding: const EdgeInsets.only(right: 15.0),
+                child: ElevatedButton(
+                  onPressed: saving ? null : handleSave,
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                    minimumSize: const Size(10, 10),
+                    textStyle: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: 'poppins',
+                    ),
+                  ),
+                  child: saving
+                      ? const SizedBox(
+                          height: 15,
+                          width: 15,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                          ))
+                      : const Text('Salvar'),
+                ),
+              ),
+            ],
+            centerTitle: false,
+            title: Text('${clienteNovo ? 'Novo cliente' : cliente.cliId}'),
+          ),
+          body: DefaultTabController(
+            length: 3,
+            child: Scaffold(
+              appBar: const TabBar(
+                indicatorColor: AppColors.primary,
+                labelColor: AppColors.primary,
+                unselectedLabelColor: AppColors.lighSecondaryText,
+                tabs: [
+                  Tab(text: 'Cliente'),
+                  Tab(text: 'Endereços'),
+                  Tab(text: 'Contatos')
+                ],
+              ),
+              body: TabBarView(children: [
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      spacing: 10,
+                      children: [
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.lighSecondaryText
+                                  .withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Column(
+                              spacing: 5,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Informações',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'CPF/CNPJ',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.lighSecondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    Row(
+                                      spacing: 10,
+                                      children: [
+                                        Expanded(
+                                          child: TextField(
+                                            // decoration:
+                                            //     const InputDecoration(label: Text('CPF/CNPJ')),
+                                            controller: _cnpjCte,
+                                            readOnly: !clienteNovo,
+                                            style: const TextStyle(
+                                                color:
+                                                    AppColors.lightPrimaryText),
+                                          ),
+                                        ),
+                                        IconButton(
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                WidgetStateProperty.resolveWith(
+                                                    (_) => AppColors.primary),
+                                          ),
+                                          onPressed: consultandoCnpj
+                                              ? null
+                                              : consultarCnpj,
+                                          icon: consultandoCnpj
+                                              ? const SizedBox(
+                                                  height: 23,
+                                                  width: 23,
+                                                  child:
+                                                      CircularProgressIndicator())
+                                              : const Icon(
+                                                  size: 24,
+                                                  Icons.search,
+                                                  color: Colors.white,
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Razão',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.lighSecondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextField(
+                                      // decoration: const InputDecoration(label: Text('Razão')),
+                                      controller: _razaoCte,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Fantasia',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.lighSecondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextField(
+                                      // decoration:
+                                      //     const InputDecoration(label: Text('Fantasia')),
+                                      controller: _fantasiaCte,
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Inscrição estadual',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.lighSecondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextField(
+                                      // decoration: const InputDecoration(
+                                      //     label: Text('Inscrição estadual')),
+                                      controller: _inscCte,
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.lighSecondaryText
+                                  .withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Contato',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Telefone',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _telefoneCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Email',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _emailCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        DecoratedBox(
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: AppColors.lighSecondaryText
+                                  .withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              spacing: 5,
+                              children: [
+                                const Text(
+                                  'Endereço',
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Row(
+                                  spacing: 10,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Endereço',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _enderecoCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 120,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Número',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _numeroCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  spacing: 10,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Bairro',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _bairroCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 120,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'CEP',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _cepCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  spacing: 10,
+                                  children: [
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Cidade',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          TextField(
+                                            controller: _cidadeCte,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 80,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Estado',
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          ListSearchModal(
+                                            enableSearch: false,
+                                            data: estados,
+                                            extractName: (e) => e,
+                                            selectedIndex: selectedEstado,
+                                            onSelect: (i) {
+                                              setState(() {
+                                                selectedEstado = i;
+                                              });
+                                              Navigator.of(context).pop();
+                                            },
+                                            label: 'Estado',
+                                            enabled: true,
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Complemento',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppColors.lighSecondaryText,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    TextField(
+                                      controller: _complCte,
+                                    )
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                child: saving
-                    ? const SizedBox(
-                        height: 15,
-                        width: 15,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                        ))
-                    : const Text('Salvar'),
-              ),
-            ),
-          ],
-          centerTitle: false,
-          title: Text('${clienteNovo ? 'Novo cliente' : cliente.cliId}'),
-        ),
-        body: DefaultTabController(
-          length: 3,
-          child: Scaffold(
-            appBar: const TabBar(
-              indicatorColor: AppColors.primary,
-              labelColor: AppColors.primary,
-              unselectedLabelColor: AppColors.lighSecondaryText,
-              tabs: [
-                Tab(text: 'Cliente'),
-                Tab(text: 'Endereços'),
-                Tab(text: 'Contatos')
-              ],
-            ),
-            body: TabBarView(children: [
-              SingleChildScrollView(
-                child: Padding(
+                Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
                     spacing: 10,
                     children: [
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.lighSecondaryText
-                                .withValues(alpha: 0.4),
-                            width: 1,
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              final endereco = ClienteEndereco(
+                                clieSeq: 0,
+                                clieCli: cliente.cliCnpj,
+                              );
+
+                              showModalBottomSheet(
+                                backgroundColor: Colors.transparent,
+                                isScrollControlled: true,
+                                useSafeArea: true,
+                                context: context,
+                                builder: (context) {
+                                  return EditarEnderecoModal(
+                                    onSave: (e) => handleInsertEndereco(e),
+                                    endereco: endereco,
+                                  );
+                                },
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                              minimumSize: const Size(10, 10),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'poppins',
+                              ),
+                            ),
+                            child: const Text('Adicionar'),
                           ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Column(
-                            spacing: 5,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Informações',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'CPF/CNPJ',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.lighSecondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  Row(
-                                    spacing: 10,
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          // decoration:
-                                          //     const InputDecoration(label: Text('CPF/CNPJ')),
-                                          controller: _cnpjCte,
-                                          readOnly: !clienteNovo,
-                                          style: const TextStyle(
-                                              color:
-                                                  AppColors.lightPrimaryText),
-                                        ),
-                                      ),
-                                      IconButton(
-                                        style: ButtonStyle(
-                                          backgroundColor:
-                                              WidgetStateProperty.resolveWith(
-                                                  (_) => AppColors.primary),
-                                        ),
-                                        onPressed: consultarCnpj,
-                                        icon: const Icon(
-                                          Icons.search,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Razão',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.lighSecondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextField(
-                                    // decoration: const InputDecoration(label: Text('Razão')),
-                                    controller: _razaoCte,
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Fantasia',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.lighSecondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextField(
-                                    // decoration:
-                                    //     const InputDecoration(label: Text('Fantasia')),
-                                    controller: _fantasiaCte,
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Inscrição estadual',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.lighSecondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextField(
-                                    // decoration: const InputDecoration(
-                                    //     label: Text('Inscrição estadual')),
-                                    controller: _inscCte,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.lighSecondaryText
-                                .withValues(alpha: 0.4),
-                            width: 1,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Contato',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppColors.primary,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Telefone',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _telefoneCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Email',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _emailCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: AppColors.lighSecondaryText
-                                .withValues(alpha: 0.4),
-                            width: 1,
-                          ),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8)),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            spacing: 5,
-                            children: [
-                              const Text(
-                                'Endereço',
-                                style: TextStyle(
-                                    fontSize: 16,
-                                    color: AppColors.primary,
-                                    fontWeight: FontWeight.w500),
-                              ),
-                              Row(
-                                spacing: 10,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Endereço',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _enderecoCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 120,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Número',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _numeroCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 10,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Bairro',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _bairroCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 120,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'CEP',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _cepCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                spacing: 10,
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Cidade',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        TextField(
-                                          controller: _cidadeCte,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 80,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Estado',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: AppColors.lighSecondaryText,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        ListSearchModal(
-                                          enableSearch: false,
-                                          data: estados,
-                                          extractName: (e) => e,
-                                          selectedIndex: selectedEstado,
-                                          onSelect: (i) {
-                                            setState(() {
-                                              selectedEstado = i;
-                                            });
-                                            Navigator.of(context).pop();
-                                          },
-                                          label: 'Estado',
-                                          enabled: true,
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const Text(
-                                    'Complemento',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppColors.lighSecondaryText,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  TextField(
-                                    controller: _complCte,
-                                  )
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                      Expanded(
+                        child: FutureBuilder(
+                            future: _futureEnderecos,
+                            builder: (context, snapshot) {
+                              if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return const CircularProgressIndicator();
+                              }
+
+                              if (snapshot.hasError) {
+                                return Center(
+                                    child: Text(
+                                        'Erro ao carregar endereços: ${snapshot.error}'));
+                              }
+
+                              if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                                return const Center(
+                                    child: Text(
+                                        'Nenhum endereço cadastrado para este cliente'));
+                              }
+
+                              final enderecos = snapshot.data!;
+
+                              return ListView.builder(
+                                  itemCount: enderecos.length,
+                                  itemBuilder: (context, i) {
+                                    return ClienteEnderecoCard(
+                                        onTap: () {
+                                          showModalBottomSheet(
+                                            backgroundColor: Colors.transparent,
+                                            isScrollControlled: true,
+                                            useSafeArea: true,
+                                            context: context,
+                                            builder: (context) {
+                                              return EditarEnderecoModal(
+                                                onDelete: (seq) => print(seq),
+                                                onSave: (e) =>
+                                                    handleSaveEndereco(e),
+                                                endereco: enderecos[i],
+                                              );
+                                            },
+                                          );
+                                        },
+                                        endereco: enderecos[i]);
+                                  });
+                            }),
                       ),
                     ],
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  spacing: 10,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
-                            minimumSize: const Size(10, 10),
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'poppins',
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    spacing: 10,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {},
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                              minimumSize: const Size(10, 10),
+                              textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'poppins',
+                              ),
                             ),
+                            child: const Text('Adicionar'),
                           ),
-                          child: const Text('Adicionar'),
-                        ),
-                      ],
-                    ),
-                    FutureBuilder(
-                        future: _futureEnderecos,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          }
+                        ],
+                      ),
+                      FutureBuilder(
+                          future: _futureContatos,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              return const CircularProgressIndicator();
+                            }
 
-                          if (snapshot.hasError) {
-                            return Center(
-                                child: Text(
-                                    'Erro ao carregar endereços: ${snapshot.error}'));
-                          }
+                            if (snapshot.hasError) {
+                              return Center(
+                                  child: Text(
+                                      'Erro ao carregar contatos: ${snapshot.error}'));
+                            }
 
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(
-                                child: Text(
-                                    'Nenhum endereço cadastrado para este cliente'));
-                          }
+                            if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                              return const Center(
+                                  child: Text(
+                                      'Nenhum contato cadastrado para este cliente'));
+                            }
 
-                          final enderecos = snapshot.data!;
+                            final contatos = snapshot.data!;
 
-                          return ListView.builder(
-                              itemCount: enderecos.length,
-                              itemBuilder: (context, i) {
-                                return ClienteEnderecoCard(
-                                    endereco: enderecos[i]);
-                              });
-                        }),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  spacing: 10,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () {},
-                          style: ElevatedButton.styleFrom(
-                            padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
-                            minimumSize: const Size(10, 10),
-                            textStyle: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'poppins',
-                            ),
-                          ),
-                          child: const Text('Adicionar'),
-                        ),
-                      ],
-                    ),
-                    FutureBuilder(
-                        future: _futureContatos,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const CircularProgressIndicator();
-                          }
-
-                          if (snapshot.hasError) {
-                            return Center(
-                                child: Text(
-                                    'Erro ao carregar contatos: ${snapshot.error}'));
-                          }
-
-                          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                            return const Center(
-                                child: Text(
-                                    'Nenhum contato cadastrado para este cliente'));
-                          }
-
-                          final contatos = snapshot.data!;
-
-                          return ListView.builder(
-                              itemCount: contatos.length,
-                              itemBuilder: (context, i) {
-                                return ClienteContatoCard(contato: contatos[i]);
-                              });
-                        }),
-                  ],
-                ),
-              )
-            ]),
-          ),
-        ));
+                            return ListView.builder(
+                                itemCount: contatos.length,
+                                itemBuilder: (context, i) {
+                                  return ClienteContatoCard(
+                                      contato: contatos[i]);
+                                });
+                          }),
+                    ],
+                  ),
+                )
+              ]),
+            ),
+          )),
+    );
   }
 }

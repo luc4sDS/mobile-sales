@@ -26,39 +26,41 @@ class CustomAlertDialog extends AlertDialog {
         color: AppColors.lighSecondaryText,
       ),
       title: Row(children: [
-        tipo == 'CONFIRMAR'
-            ? const SizedBox(width: 0)
-            : Container(
-                height: 50,
-                width: 50,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: tipo == 'ERRO'
-                      ? AppColors.erro
-                      : tipo == 'ALERTA'
-                          ? AppColors.alert
-                          : tipo == 'OK'
-                              ? AppColors.ok
-                              : AppColors.info,
-                ),
-                child: Icon(
-                  tipo == 'ERRO'
-                      ? Icons.cancel
-                      : tipo == 'ALERTA'
-                          ? Icons.warning
-                          : tipo == 'OK'
-                              ? Icons.check
-                              : Icons.info,
-                  size: 30,
-                  color: Colors.white,
-                ),
-              ),
+        Container(
+          height: 50,
+          width: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: tipo == 'ERRO'
+                ? AppColors.erro
+                : tipo == 'ALERTA'
+                    ? AppColors.alert
+                    : tipo == 'OK'
+                        ? AppColors.ok
+                        : AppColors.info,
+          ),
+          child: Icon(
+            tipo == 'ERRO'
+                ? Icons.cancel
+                : tipo == 'ALERTA'
+                    ? Icons.warning
+                    : tipo == 'OK'
+                        ? Icons.check
+                        : tipo == 'CONFIRMAR'
+                            ? Icons.question_mark
+                            : Icons.info,
+            size: 30,
+            color: Colors.white,
+          ),
+        ),
         const SizedBox(width: 20),
         titulo
       ]),
-      content: ConstrainedBox(
-          constraints: const BoxConstraints(maxHeight: 250),
-          child: SingleChildScrollView(child: super.content)),
+      content: tipo == 'OK'
+          ? null
+          : ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 250),
+              child: SingleChildScrollView(child: super.content)),
       actions: super.actions,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),

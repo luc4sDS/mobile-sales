@@ -24,7 +24,7 @@ class AppColors {
   static const erro = Color.fromARGB(255, 179, 29, 29);
   static const ok = Color.fromARGB(255, 13, 148, 13);
   static const alert = Color.fromARGB(255, 219, 170, 10);
-  static const info = Color.fromARGB(255, 10, 132, 214);
+  static const info = Color.fromARGB(255, 13, 58, 143);
   static const darkHighlight = Color.fromARGB(255, 142, 177, 241);
   static const lightHighlight = Color.fromARGB(255, 40, 97, 202);
   static const lightAbertoBg = Color.fromARGB(255, 203, 231, 247);

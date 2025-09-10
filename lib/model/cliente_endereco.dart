@@ -1,5 +1,5 @@
 class ClienteEndereco {
-  int? clieSeq;
+  int clieSeq;
   int? clieId;
   String? clieCli;
   String? clieDescricao;
@@ -15,7 +15,7 @@ class ClienteEndereco {
   String? clieCompl;
 
   ClienteEndereco({
-    this.clieSeq,
+    required this.clieSeq,
     this.clieId,
     this.clieCli,
     this.clieDescricao,
@@ -33,7 +33,7 @@ class ClienteEndereco {
 
   factory ClienteEndereco.fromMap(Map<String, dynamic> map) {
     return ClienteEndereco(
-      clieSeq: map['CLIE_SEQ'] as int?,
+      clieSeq: map['CLIE_SEQ'] as int,
       clieId: map['CLIE_ID'] as int?,
       clieCli:
           map['CLIE_CLI'] as String? ?? map['CLIE_IDENTIFICADOR'] as String?,
