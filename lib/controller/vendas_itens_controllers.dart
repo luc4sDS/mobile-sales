@@ -14,4 +14,11 @@ class VendasItensController {
     _vendasItens = res.map((i) => VendaItem.fromMap(i)).toList();
     return _vendasItens;
   }
+
+  Future<int> deleteById(int id) async {
+    final db = await DatabaseService().database;
+
+    return await db
+        .delete('VENDAS_ITENS', where: 'VDI_ID = ?', whereArgs: [id]);
+  }
 }

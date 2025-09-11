@@ -82,6 +82,7 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
         context: context,
         builder: (context) {
           return EditarItemModal(
+            onDelete: (_) {},
             estado: widget.vendaEstado,
             item: item,
             onSave: widget.onSave,

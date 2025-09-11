@@ -303,7 +303,7 @@ class _SincronizarPageState extends State<SincronizarPage>
       dados: sinc.tabelaPrecoCabecalhos,
       nomeTabela: 'TABELA',
       toMap: (tab) => tab.toMap(),
-      getId: (tab) => tab.tbpId,
+      getId: (tab) => tab.tbId,
       onSyncRecord: () => {setState(() => progressCount++)},
     );
 

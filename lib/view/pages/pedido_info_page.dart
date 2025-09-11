@@ -76,6 +76,67 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
+  void handleItemDelete(int id) async {
+    Utils().customShowDialog(
+        'CONFIRMAR', 'Confirmar', 'Excluir este item?', context,
+        actions: [
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Sim'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Não'),
+          ),
+        ]).then((result) async {
+      if (!(result ?? false)) {
+        return;
+      }
+
+      if (id > 0) {
+        try {
+          final res = await _vendasItensController.deleteById(id);
+
+          if (res > 0) {
+            _itens =
+                await _vendasItensController.getVendaItens(widget.venda.vndId);
+            venda = venda.copyWith(itens: _itens);
+            venda = _vendaController.totalizar(venda);
+            await _vendaController.salvarVenda(venda);
+
+            if (mounted) {
+              Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  backgroundColor: AppColors.lightSnackBarBg,
+                  content: Text(
+                    'Produto removido com sucesso!',
+                    style: TextStyle(color: AppColors.lightSnackBarText),
+                  ),
+                ),
+              );
+            }
+
+            setState(() {});
+          } else {
+            if (mounted) {
+              Utils().customShowDialog('ERRO', 'Erro ao remover item',
+                  'Erro desconhecido.', context);
+            }
+          }
+        } catch (e) {
+          Utils().customShowDialog(
+              'ERRO', 'Erro ao remover item', 'Erro desconhecido.', context);
+        }
+      } else {
+        if (mounted) {
+          Utils().customShowDialog('ERRO', 'Erro ao remover item',
+              'Este item não existe no banco de dados.', context);
+        }
+      }
+    });
+  }
+
   void handleEditarItem(VendaItem item, int index) async {
     try {
       venda.itens[index] = item;
@@ -147,6 +208,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     venda = widget.venda;
     _itens = await _vendasItensController.getVendaItens(widget.venda.vndId);
     venda = venda.copyWith(itens: _itens);
+
+    print(_itens);
 
     _emailCte.text = venda.vndEmail ?? '';
     await _parametrosController.getParametros();
@@ -589,6 +652,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                       itemCount: venda.itens.length,
                                       itemBuilder: (context, i) {
                                         final item = venda.itens[i];
+
                                         return Padding(
                                           padding: const EdgeInsets.fromLTRB(
                                               0, 0, 0, 7),
@@ -602,6 +666,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 context: context,
                                                 builder: (context) =>
                                                     EditarItemModal(
+                                                  onDelete: handleItemDelete,
                                                   estado: venda.vndUf ?? '',
                                                   readOnly:
                                                       venda.vndEnviado != 'N',

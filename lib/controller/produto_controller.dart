@@ -14,4 +14,20 @@ class ProdutoController {
 
     return res.map((e) => Produto.fromMap(e)).toList();
   }
+
+  Future<Produto?> getProdutoById(int id) async {
+    final db = await DatabaseService().database;
+
+    final res = await db.query(
+      'PRODUTOS',
+      where: 'PROD_ID = ?',
+      whereArgs: [id],
+    );
+
+    if (res.length == 1) {
+      return Produto.fromMap(res[0]);
+    } else {
+      return null;
+    }
+  }
 }

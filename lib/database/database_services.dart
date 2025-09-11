@@ -309,9 +309,9 @@ class DatabaseService {
         );''');
 
         await db.execute('''CREATE TABLE TABELA (
-          TBP_ID INTEGER PRIMARY KEY,
-          TBP_DESC TEXT,
-          TBP_ATIVO TEXT
+          TB_ID INTEGER PRIMARY KEY,
+          TB_DESC TEXT,
+          TB_ATIVO TEXT
         );''');
       },
     );

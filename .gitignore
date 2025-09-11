@@ -59,3 +59,11 @@ app.*.map.json
 /linux/build/
 /generated/
 /pubspec.lock
+
+# Build
+/build/
+/.dart_tool/
+/ios/.generated/
+
+# Dependências
+/third_party/

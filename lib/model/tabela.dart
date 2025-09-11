@@ -1,45 +1,45 @@
 class TabelaPrecoCabecalho {
-  final int tbpId;
-  final String tbpDesc;
-  final String tbpAtivo;
+  final int tbId;
+  final String tbDesc;
+  final String tbAtivo;
 
   TabelaPrecoCabecalho({
-    required this.tbpId,
-    required this.tbpDesc,
-    this.tbpAtivo = 'S',
+    required this.tbId,
+    required this.tbDesc,
+    this.tbAtivo = 'S',
   });
 
   factory TabelaPrecoCabecalho.fromMap(Map<String, dynamic> map) {
     return TabelaPrecoCabecalho(
-      tbpId: map['TBP_ID'] as int,
-      tbpDesc: map['TBP_DESC'] as String,
-      tbpAtivo: map['TBP_ATIVO'] as String? ?? 'S',
+      tbId: map['TB_ID'] as int,
+      tbDesc: map['TB_DESC'] as String,
+      tbAtivo: map['TB_ATIVO'] as String? ?? 'S',
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
-      'TBP_ID': tbpId,
-      'TBP_DESC': tbpDesc,
-      'TBP_ATIVO': tbpAtivo,
+      'TB_ID': tbId,
+      'TB_DESC': tbDesc,
+      'TB_ATIVO': tbAtivo,
     };
   }
 
   TabelaPrecoCabecalho copyWith({
-    int? tbpId,
-    String? tbpDesc,
-    String? tbpAtivo,
+    int? tbId,
+    String? tbDesc,
+    String? tbAtivo,
   }) {
     return TabelaPrecoCabecalho(
-      tbpId: tbpId ?? this.tbpId,
-      tbpDesc: tbpDesc ?? this.tbpDesc,
-      tbpAtivo: tbpAtivo ?? this.tbpAtivo,
+      tbId: tbId ?? this.tbId,
+      tbDesc: tbDesc ?? this.tbDesc,
+      tbAtivo: tbAtivo ?? this.tbAtivo,
     );
   }
 
   @override
   String toString() {
-    return 'TabelaPrecoCabecalho(tbpId: $tbpId, tbpDesc: $tbpDesc, tbpAtivo: $tbpAtivo)';
+    return 'TabelaPrecoCabecalho(tbpId: $tbId, tbDesc: $tbDesc, tbAtivo: $tbAtivo)';
   }
 
   @override
@@ -47,11 +47,11 @@ class TabelaPrecoCabecalho {
     if (identical(this, other)) return true;
 
     return other is TabelaPrecoCabecalho &&
-        other.tbpId == tbpId &&
-        other.tbpDesc == tbpDesc &&
-        other.tbpAtivo == tbpAtivo;
+        other.tbId == tbId &&
+        other.tbDesc == tbDesc &&
+        other.tbAtivo == tbAtivo;
   }
 
   @override
-  int get hashCode => tbpId.hashCode ^ tbpDesc.hashCode ^ tbpAtivo.hashCode;
+  int get hashCode => tbId.hashCode ^ tbDesc.hashCode ^ tbAtivo.hashCode;
 }
