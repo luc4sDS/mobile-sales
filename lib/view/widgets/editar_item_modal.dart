@@ -4,36 +4,22 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/produto_controller.dart';
+import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/parametros.dart';
 import 'package:mobile_sales/model/produto.dart';
+import 'package:mobile_sales/model/ultimas_vendas.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/CustomCheckBox.dart';
 import 'package:mobile_sales/view/widgets/custom_text_field.dart';
+import 'package:mobile_sales/view/widgets/ultima_venda_card.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
-
-class UltimasVendas {
-  final String emissao;
-  final int codigo;
-  final String nomepro;
-  final double qtd;
-  final double unit;
-  final int sequen;
-
-  const UltimasVendas({
-    required this.emissao,
-    required this.codigo,
-    required this.nomepro,
-    required this.qtd,
-    required this.unit,
-    required this.sequen,
-  });
-}
 
 class EditarItemModal extends StatefulWidget {
   final VendaItem item;
   final String estado;
+  final String cliCnpj;
   final void Function(VendaItem) onSave;
   final void Function(int itemId)? onDelete;
   final bool? readOnly;
@@ -45,6 +31,7 @@ class EditarItemModal extends StatefulWidget {
     this.readOnly,
     required this.estado,
     required this.onDelete,
+    required this.cliCnpj,
   });
 
   @override
@@ -54,6 +41,7 @@ class EditarItemModal extends StatefulWidget {
 class _EditarItemModalState extends State<EditarItemModal> {
   //Controllers
   final _prodController = ProdutoController();
+  final _vendasController = VendasController();
   final _parametrosController = ParametrosController();
 
   //TextEditingControllers
@@ -61,23 +49,23 @@ class _EditarItemModalState extends State<EditarItemModal> {
   final _unitarioCte = TextEditingController();
   final _descontoCte = TextEditingController();
   final _obsCte = TextEditingController();
-  late Future<List<UltimasVendas>> _futureUltimasVendas;
 
   //Variables
-  Timer? _textFieldsTimer;
   late VendaItem item;
   late Produto? produto;
   bool loading = false;
   late Parametros? parametros;
-
-  // Future<List<UltimasVendas>> getUltimasVendas() async {
-  //   final dio = Dio();
-  // }
+  late Future<List<UltimasVendas>> _ultimasVendasFuture;
+  bool lanceCheckBoxValue = false;
 
   Future<void> handleInitState() async {
     item = widget.item;
     produto = await _prodController.getProdutoById(item.vdiProdCod);
     final res = await _parametrosController.getParametros();
+    _ultimasVendasFuture =
+        _vendasController.getUltimasVendas(item.vdiProdCod, widget.cliCnpj);
+
+    print(await _ultimasVendasFuture);
 
     if (res.isEmpty) {
       parametros = _parametrosController.parametros;
@@ -240,42 +228,78 @@ class _EditarItemModalState extends State<EditarItemModal> {
                     child: Column(
                       children: [
                         Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              spacing: 10,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Column(
+                          child: Column(
+                            spacing: 10,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Código',
+                                        style: TextStyle(
+                                          color: AppColors.lighSecondaryText,
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        item.vdiProdCod.toString(),
+                                        style: const TextStyle(fontSize: 18),
+                                      )
+                                    ],
+                                  ),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Expanded(
+                                    child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
                                         const Text(
-                                          'Código',
+                                          'Descrição',
                                           style: TextStyle(
                                             color: AppColors.lighSecondaryText,
                                             fontWeight: FontWeight.w500,
                                             fontSize: 14,
                                           ),
                                         ),
-                                        Text(
-                                          item.vdiProdCod.toString(),
-                                          style: const TextStyle(fontSize: 18),
+                                        Row(
+                                          children: [
+                                            Expanded(
+                                              child: Text(
+                                                item.vdiDescricao,
+                                                style: const TextStyle(
+                                                    fontSize: 18),
+                                                overflow: TextOverflow.visible,
+                                              ),
+                                            ),
+                                          ],
                                         )
                                       ],
                                     ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Expanded(
+                                  )
+                                ],
+                              ),
+                              Row(
+                                spacing: 10,
+                                children: [
+                                  Flexible(
+                                    flex: 1,
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 120),
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
                                           const Text(
-                                            'Descrição',
+                                            'Qtd.',
                                             style: TextStyle(
                                               color:
                                                   AppColors.lighSecondaryText,
@@ -283,174 +307,194 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                               fontSize: 14,
                                             ),
                                           ),
-                                          Row(
-                                            children: [
-                                              Expanded(
-                                                child: Text(
-                                                  item.vdiDescricao,
-                                                  style: const TextStyle(
-                                                      fontSize: 18),
-                                                  overflow:
-                                                      TextOverflow.visible,
-                                                ),
-                                              ),
-                                            ],
-                                          )
+                                          CustomTextField(
+                                            onChanged: handleQtdChanged,
+                                            enabled: !readOnly,
+                                            controller: _qtdCte,
+                                            textAlign: TextAlign.end,
+                                            keyboardType: TextInputType.number,
+                                          ),
                                         ],
                                       ),
-                                    )
-                                  ],
-                                ),
-                                Row(
-                                  spacing: 10,
-                                  children: [
-                                    Flexible(
-                                      flex: 1,
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 120),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Qtd.',
-                                              style: TextStyle(
-                                                color:
-                                                    AppColors.lighSecondaryText,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            CustomTextField(
-                                              onChanged: handleQtdChanged,
-                                              enabled: !readOnly,
-                                              controller: _qtdCte,
-                                              textAlign: TextAlign.end,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
                                     ),
-                                    Flexible(
-                                      flex: 1,
-                                      child: ConstrainedBox(
-                                        constraints:
-                                            const BoxConstraints(maxWidth: 120),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            const Text(
-                                              'Unitário',
-                                              style: TextStyle(
-                                                color:
-                                                    AppColors.lighSecondaryText,
-                                                fontWeight: FontWeight.w500,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            CustomTextField(
-                                              onChanged: handleUnitChanged,
-                                              enabled: !readOnly &&
-                                                  (parametros?.parDesconto ==
-                                                      'S'),
-                                              controller: _unitarioCte,
-                                              textAlign: TextAlign.end,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                    parametros?.parDesconto == 'S'
-                                        ? Flexible(
-                                            flex: 1,
-                                            child: ConstrainedBox(
-                                              constraints: const BoxConstraints(
-                                                  maxWidth: 120),
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  const Text(
-                                                    'Desc. (%)',
-                                                    style: TextStyle(
-                                                      color: AppColors
-                                                          .lighSecondaryText,
-                                                      fontWeight:
-                                                          FontWeight.w500,
-                                                      fontSize: 14,
-                                                    ),
-                                                  ),
-                                                  CustomTextField(
-                                                    onChanged:
-                                                        handleDescChanged,
-                                                    enabled: !readOnly,
-                                                    controller: _descontoCte,
-                                                    textAlign: TextAlign.end,
-                                                    keyboardType:
-                                                        TextInputType.number,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          )
-                                        : const SizedBox.shrink(),
-                                  ],
-                                ),
-                                Row(
-                                  children: [
-                                    produto?.prodCorte == 'S'
-                                        ? CustomCheckBox(
-                                            value: true,
-                                            onChanged: (_) {},
-                                            label: 'Lance',
-                                          )
-                                        : const SizedBox.shrink(),
-                                    Expanded(
-                                      child: Row(
-                                        spacing: 10,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
+                                  ),
+                                  Flexible(
+                                    flex: 1,
+                                    child: ConstrainedBox(
+                                      constraints:
+                                          const BoxConstraints(maxWidth: 120),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                          ValorCard(
-                                              label: 'Valor ST',
-                                              valor: item.vdiVlst),
-                                          ValorCard(
-                                              label: 'Total',
-                                              valor: item.vdiTotal),
+                                          const Text(
+                                            'Unitário',
+                                            style: TextStyle(
+                                              color:
+                                                  AppColors.lighSecondaryText,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          CustomTextField(
+                                            onChanged: handleUnitChanged,
+                                            enabled: !readOnly &&
+                                                (parametros?.parDesconto ==
+                                                    'S'),
+                                            controller: _unitarioCte,
+                                            textAlign: TextAlign.end,
+                                            keyboardType: TextInputType.number,
+                                          ),
                                         ],
                                       ),
                                     ),
-                                  ],
-                                ),
-                                Column(
-                                  children: [
-                                    const Text(
-                                      'Observações',
-                                      style: TextStyle(
-                                        color: AppColors.lighSecondaryText,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14,
-                                      ),
+                                  ),
+                                  parametros?.parDesconto == 'S'
+                                      ? Flexible(
+                                          flex: 1,
+                                          child: ConstrainedBox(
+                                            constraints: const BoxConstraints(
+                                                maxWidth: 120),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  'Desc. (%)',
+                                                  style: TextStyle(
+                                                    color: AppColors
+                                                        .lighSecondaryText,
+                                                    fontWeight: FontWeight.w500,
+                                                    fontSize: 14,
+                                                  ),
+                                                ),
+                                                CustomTextField(
+                                                  onChanged: handleDescChanged,
+                                                  enabled: !readOnly,
+                                                  controller: _descontoCte,
+                                                  textAlign: TextAlign.end,
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        )
+                                      : const SizedBox.shrink(),
+                                ],
+                              ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // produto?.prodCorte == 'S'
+                                  true
+                                      ? CustomCheckBox(
+                                          value: lanceCheckBoxValue,
+                                          onTap: () {
+                                            lanceCheckBoxValue =
+                                                !lanceCheckBoxValue;
+                                            setState(() {});
+                                          },
+                                          onChanged: (value) {
+                                            lanceCheckBoxValue = value ?? false;
+                                            setState(() {});
+                                          },
+                                          label: 'Lance',
+                                        )
+                                      : const SizedBox.shrink(),
+                                  Expanded(
+                                    child: Wrap(
+                                      spacing: 10,
+                                      runSpacing: 10,
+                                      alignment: WrapAlignment.end,
+                                      children: [
+                                        ValorCard(
+                                          label: 'Valor ST',
+                                          valor: item.vdiVlst,
+                                        ),
+                                        ValorCard(
+                                          label: 'Total',
+                                          valor: item.vdiTotal,
+                                        ),
+                                      ],
                                     ),
-                                    SizedBox(
-                                      height: 150,
-                                      child: CustomTextField(
-                                        enabled: !readOnly,
-                                        maxLines: null,
-                                        minLines: 10,
-                                        controller: _obsCte,
-                                      ),
+                                  ),
+                                ],
+                              ),
+                              Column(
+                                children: [
+                                  const Text(
+                                    'Observações',
+                                    style: TextStyle(
+                                      color: AppColors.lighSecondaryText,
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
                                     ),
-                                  ],
-                                ),
-                              ],
-                            ),
+                                  ),
+                                  SizedBox(
+                                    height: 150,
+                                    child: CustomTextField(
+                                      enabled: !readOnly,
+                                      maxLines: null,
+                                      minLines: 10,
+                                      controller: _obsCte,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              Expanded(
+                                child: FutureBuilder(
+                                    future: _ultimasVendasFuture,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState ==
+                                          ConnectionState.waiting) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      if (snapshot.hasError) {
+                                        Text(
+                                            'Erro ao carregar ultimas Vendas: ${snapshot.error}');
+                                      }
+
+                                      if (!snapshot.hasData ||
+                                          snapshot.data!.isEmpty) {
+                                        return const SizedBox.shrink();
+                                      }
+
+                                      final ultimasVendas = snapshot.data!;
+
+                                      return Column(
+                                        children: [
+                                          const Row(
+                                            children: [
+                                              Text(
+                                                'Últimas vendas',
+                                                style: TextStyle(
+                                                  fontSize: 14,
+                                                  color: AppColors
+                                                      .lighSecondaryText,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              )
+                                            ],
+                                          ),
+                                          Expanded(
+                                            child: ListView.builder(
+                                              itemCount: ultimasVendas.length,
+                                              itemBuilder: (context, index) {
+                                                final item =
+                                                    ultimasVendas[index];
+                                                return UltimaVendaCard(
+                                                  ultimaVenda: item,
+                                                );
+                                              },
+                                            ),
+                                          ),
+                                        ],
+                                      );
+                                    }),
+                              )
+                            ],
                           ),
                         ),
                         !readOnly

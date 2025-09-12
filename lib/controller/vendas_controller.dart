@@ -5,6 +5,7 @@ import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/parametros.dart';
 import 'package:mobile_sales/model/produto_st.dart';
+import 'package:mobile_sales/model/ultimas_vendas.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
@@ -217,6 +218,38 @@ class VendasController {
       } else {
         throw Exception('Erro ao gerar chave da venda');
       }
+    }
+  }
+
+  Future<List<UltimasVendas>> getUltimasVendas(
+      int prodId, String cliCnpj) async {
+    try {
+      final db = await DatabaseService().database;
+
+      final res = await db.rawQuery('''
+        SELECT 
+          VDI_PROD_COD UV_PROD_COD,
+          VDI_DESCRICAO UV_PROD_NOME,
+          VDI_UNIT UV_UNITARIO,
+          VDI_QTD UV_QTD,
+          VND_DATAHORA UV_EMISSAO,
+          VDI_VND_ID UV_VND_ID,
+          VDI_TOTALG UV_TOTALG
+        FROM VENDAS_ITENS
+        LEFT JOIN VENDAS ON
+          VND_CHAVE = VDI_VND_CHAVE
+        WHERE
+          VDI_PROD_COD = ?
+        AND
+          VND_CLI_CNPJ= ?        
+        ORDER BY
+          VDI_ID DESC
+        LIMIT 5
+      ''', [prodId, cliCnpj]);
+
+      return res.map((e) => UltimasVendas.fromMap(e)).toList();
+    } catch (e) {
+      return [];
     }
   }
 }

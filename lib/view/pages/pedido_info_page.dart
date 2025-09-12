@@ -619,6 +619,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   context: context,
                                                   builder: (context) =>
                                                       AdicionarProdutoModal(
+                                                    cliCnpj:
+                                                        venda.vndCliCnpj ?? '',
                                                     vendaChave:
                                                         venda.vndChave ?? '',
                                                     vendaEstado:
@@ -666,6 +668,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 context: context,
                                                 builder: (context) =>
                                                     EditarItemModal(
+                                                  cliCnpj:
+                                                      venda.vndCliCnpj ?? '',
                                                   onDelete: handleItemDelete,
                                                   estado: venda.vndUf ?? '',
                                                   readOnly:

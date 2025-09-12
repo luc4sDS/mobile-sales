@@ -14,6 +14,7 @@ class AdicionarProdutoModal extends StatefulWidget {
   final String vendaChave;
   final double vendaPrAcrescimo;
   final String vendaEstado;
+  final String cliCnpj;
 
   const AdicionarProdutoModal({
     super.key,
@@ -22,6 +23,7 @@ class AdicionarProdutoModal extends StatefulWidget {
     required this.vendaChave,
     required this.vendaPrAcrescimo,
     required this.vendaEstado,
+    required this.cliCnpj,
   });
 
   @override
@@ -83,6 +85,7 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
         builder: (context) {
           return EditarItemModal(
             onDelete: (_) {},
+            cliCnpj: widget.cliCnpj,
             estado: widget.vendaEstado,
             item: item,
             onSave: widget.onSave,
@@ -192,11 +195,15 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
 
                               return ProdutoCard(
                                 codigo: produto.prodId,
+                                valorBon: ((produto.prodPbonificacao ?? 0) *
+                                        produto.prodPreco) /
+                                    100,
                                 descricao: produto.prodDescricao,
-                                embalagem: produto.prodEmbalagem ?? '-',
+                                embalagem: produto.prodEmbalagem,
                                 pmin: produto.prodPmin ?? 0,
                                 preco: produto.prodPreco,
                                 onTap: () => handleTap(produto),
+                                bonifica: produto.prodBonifica == 'S',
                               );
                             },
                           );

@@ -5,9 +5,11 @@ class ProdutoCard extends StatelessWidget {
   final int codigo;
   final String descricao;
   final double preco;
-  final String embalagem;
+  final String? embalagem;
   final double pmin;
   final void Function() onTap;
+  final double valorBon;
+  final bool bonifica;
 
   const ProdutoCard({
     super.key,
@@ -17,6 +19,8 @@ class ProdutoCard extends StatelessWidget {
     required this.embalagem,
     required this.pmin,
     required this.onTap,
+    required this.valorBon,
+    required this.bonifica,
   });
 
   @override
@@ -59,8 +63,7 @@ class ProdutoCard extends StatelessWidget {
                   ),
                 ],
               ),
-              Row(
-                spacing: 10,
+              Wrap(
                 children: [
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -74,30 +77,56 @@ class ProdutoCard extends StatelessWidget {
                       Text(preco.toStringAsFixed(2)),
                     ],
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Emb.: ',
-                        style: TextStyle(
-                            color: AppColors.lighSecondaryText,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      Text(embalagem),
-                    ],
+                  const SizedBox(
+                    width: 10,
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text(
-                        'Min.: ',
-                        style: TextStyle(
-                            color: AppColors.lighSecondaryText,
-                            fontWeight: FontWeight.w500),
-                      ),
-                      Text(pmin.toStringAsFixed(2)),
-                    ],
+                  embalagem != null
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Emb.: ',
+                              style: TextStyle(
+                                  color: AppColors.lighSecondaryText,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Text(embalagem ?? '-'),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                  SizedBox(
+                    width: embalagem != null ? 10 : 0,
                   ),
+                  pmin > 0
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Min.: ',
+                              style: TextStyle(
+                                  color: AppColors.lighSecondaryText,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Text(pmin.toStringAsFixed(2)),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                  SizedBox(width: pmin > 0 ? 10 : 0),
+                  bonifica
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text(
+                              'Vlr. Bon.: ',
+                              style: TextStyle(
+                                  color: AppColors.lighSecondaryText,
+                                  fontWeight: FontWeight.w500),
+                            ),
+                            Text(valorBon.toStringAsFixed(2)),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                  SizedBox(width: bonifica ? 10 : 0)
                 ],
               ),
             ],
