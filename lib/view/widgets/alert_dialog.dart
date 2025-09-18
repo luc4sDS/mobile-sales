@@ -16,6 +16,7 @@ class CustomAlertDialog extends AlertDialog {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
+      actionsAlignment: MainAxisAlignment.spaceAround,
       backgroundColor: AppColors.lightBackground,
       titleTextStyle: const TextStyle(
           fontSize: 18,
@@ -25,36 +26,42 @@ class CustomAlertDialog extends AlertDialog {
         fontFamily: 'Poppins',
         color: AppColors.lighSecondaryText,
       ),
-      title: Row(children: [
+      title: Column(children: [
         Container(
           height: 50,
           width: 50,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(10),
             color: tipo == 'ERRO'
-                ? AppColors.erro
+                ? AppColors.lightCanceladoBg
                 : tipo == 'ALERTA'
-                    ? AppColors.alert
+                    ? AppColors.lightAlertaBg
                     : tipo == 'OK'
-                        ? AppColors.ok
-                        : AppColors.info,
+                        ? AppColors.lightEnviadoBg
+                        : AppColors.lightAbertoBg,
           ),
           child: Icon(
             tipo == 'ERRO'
-                ? Icons.cancel
+                ? Icons.cancel_outlined
                 : tipo == 'ALERTA'
-                    ? Icons.warning
+                    ? Icons.warning_outlined
                     : tipo == 'OK'
-                        ? Icons.check
+                        ? Icons.check_outlined
                         : tipo == 'CONFIRMAR'
                             ? Icons.question_mark
-                            : Icons.info,
+                            : Icons.info_outline,
             size: 30,
-            color: Colors.white,
+            color: tipo == 'ERRO'
+                ? AppColors.lightCanceladoText
+                : tipo == 'ALERTA'
+                    ? AppColors.lightAlertaText
+                    : tipo == 'OK'
+                        ? AppColors.lightEnviadoText
+                        : AppColors.lightAbertoText,
           ),
         ),
-        const SizedBox(width: 20),
-        titulo
+        const SizedBox(height: 20),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: [titulo])
       ]),
       content: tipo == 'OK'
           ? null

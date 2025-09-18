@@ -1,6 +1,7 @@
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/produto_st_controller.dart';
+import 'package:mobile_sales/controller/tabela_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/parametros.dart';
@@ -154,11 +155,16 @@ class VendasController {
   }
 
   Future<Venda?> novoPedido(int cliId) async {
+    final db = await DatabaseService().database;
     final clienteController = ClienteController();
     final parametrosController = ParametrosController();
-    final cliente = await clienteController.getClienteById(cliId);
+    final tabelaController = TabelaController();
+
     await parametrosController.getParametros();
+
+    final cliente = await clienteController.getClienteById(cliId);
     late Parametros parametros;
+    late int tabela;
 
     if (cliente == null) {
       return null;
@@ -171,7 +177,15 @@ class VendasController {
       parametros = parametrosController.parametros!;
     }
 
-    final db = await DatabaseService().database;
+    if ((cliente.cliTabela ?? 0) > 0) {
+      tabela = cliente.cliTabela ?? 0;
+    } else {
+      tabela = 0;
+      if (parametros.parTabelaEstado == 'S') {
+        tabela =
+            await tabelaController.getTabelaIdByUF(cliente.cliEstado ?? '');
+      }
+    }
 
     final res = await db.insert('VENDAS', {
       'vnd_datahora': DateTime.now().toIso8601String(),
@@ -201,6 +215,7 @@ class VendasController {
       'vnd_vend': parametrosController.parametros?.parCusu,
       'vnd_vendnome': parametrosController.parametros!.parVendNome!,
       'vnd_email': cliente.cliEmail,
+      'vnd_tabela': tabela,
     });
 
     final novaVendaSemChave = await getVendaById(res);
@@ -241,7 +256,9 @@ class VendasController {
         WHERE
           VDI_PROD_COD = ?
         AND
-          VND_CLI_CNPJ= ?        
+          VND_CLI_CNPJ = ?
+        AND
+          VND_ENVIADO IN ('S', 'P')
         ORDER BY
           VDI_ID DESC
         LIMIT 5

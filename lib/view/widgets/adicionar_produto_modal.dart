@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/produto_controller.dart';
 import 'package:mobile_sales/controller/produto_st_controller.dart';
+import 'package:mobile_sales/controller/tabela_controller.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/produto.dart';
 import 'package:mobile_sales/model/venda_item.dart';
@@ -35,14 +36,29 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
   final _pesquisaFocusNode = FocusNode();
   final _produtoController = ProdutoController();
   final _stController = ProdutoStController();
+  final _tabelaController = TabelaController();
 
   late Future<List<Produto>> _produtosFuture;
+  late int tabela;
+  bool loading = true;
 
   @override
   void initState() {
     super.initState();
 
-    _produtosFuture = _produtoController.getProdutos(_pesquisaCte.text);
+    handleInitState();
+  }
+
+  void handleInitState() async {
+    loading = true;
+
+    tabela = await _tabelaController.getTabelaIdByUF(widget.vendaEstado);
+    _produtosFuture =
+        _produtoController.getProdutos(_pesquisaCte.text, tabela: tabela);
+
+    setState(() {
+      loading = false;
+    });
   }
 
   void handleTap(Produto produto) async {
@@ -149,8 +165,8 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
                       focusNode: _pesquisaFocusNode,
                       onChanged: (_) => {
                         setState(() {
-                          _produtosFuture =
-                              _produtoController.getProdutos(_pesquisaCte.text);
+                          _produtosFuture = _produtoController
+                              .getProdutos(_pesquisaCte.text, tabela: tabela);
                         })
                       },
                       controller: _pesquisaCte,
@@ -159,57 +175,65 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
                         suffixIcon: Icon(Icons.search),
                       ),
                     ),
-                    Expanded(
-                      child: FutureBuilder(
-                        future: _produtosFuture,
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                                child: CircularProgressIndicator());
-                          }
+                    loading
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : Expanded(
+                            child: FutureBuilder(
+                              future: _produtosFuture,
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                      child: CircularProgressIndicator());
+                                }
 
-                          if (snapshot.hasError) {
-                            return LoadingError(
-                              title: 'Erro ao buscar produtos',
-                              error: snapshot.error.toString(),
-                              retry: () => setState(() {
-                                _produtosFuture = _produtoController
-                                    .getProdutos(_pesquisaCte.text);
-                              }),
-                            );
-                          }
+                                if (snapshot.hasError) {
+                                  return SingleChildScrollView(
+                                    child: LoadingError(
+                                      title: 'Erro ao buscar produtos',
+                                      error: snapshot.error.toString(),
+                                      retry: () => setState(() {
+                                        _produtosFuture = _produtoController
+                                            .getProdutos(_pesquisaCte.text,
+                                                tabela: tabela);
+                                      }),
+                                    ),
+                                  );
+                                }
 
-                          if (!snapshot.hasData) {
-                            return const Center(
-                                child: Text('Nenhum produto encontrado'));
-                          }
+                                if (!snapshot.hasData) {
+                                  return const Center(
+                                      child: Text('Nenhum produto encontrado'));
+                                }
 
-                          final produtos = snapshot.data!;
+                                final produtos = snapshot.data!;
 
-                          return ListView.builder(
-                            shrinkWrap: true,
-                            itemCount: produtos.length,
-                            itemBuilder: (context, i) {
-                              final produto = produtos[i];
+                                return ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: produtos.length,
+                                  itemBuilder: (context, i) {
+                                    final produto = produtos[i];
 
-                              return ProdutoCard(
-                                codigo: produto.prodId,
-                                valorBon: ((produto.prodPbonificacao ?? 0) *
-                                        produto.prodPreco) /
-                                    100,
-                                descricao: produto.prodDescricao,
-                                embalagem: produto.prodEmbalagem,
-                                pmin: produto.prodPmin ?? 0,
-                                preco: produto.prodPreco,
-                                onTap: () => handleTap(produto),
-                                bonifica: produto.prodBonifica == 'S',
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    )
+                                    return ProdutoCard(
+                                      codigo: produto.prodId,
+                                      valorBon:
+                                          ((produto.prodPbonificacao ?? 0) *
+                                                  produto.prodPreco) /
+                                              100,
+                                      descricao: produto.prodDescricao,
+                                      embalagem: produto.prodEmbalagem,
+                                      pmin: produto.prodPmin ?? 0,
+                                      preco: produto.prodPreco,
+                                      onTap: () => handleTap(produto),
+                                      bonifica: produto.prodBonifica == 'S',
+                                    );
+                                  },
+                                );
+                              },
+                            ),
+                          )
                   ],
                 ),
               ),

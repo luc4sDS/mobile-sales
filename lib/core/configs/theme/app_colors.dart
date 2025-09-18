@@ -31,12 +31,14 @@ class AppColors {
   static const lightEnviadoBg = Color.fromARGB(255, 205, 245, 203);
   static const lightCanceladoBg = Color.fromARGB(255, 241, 212, 212);
   static const lightAbertoText = Color(0xff013957);
-  static const lightEnviadoText = Color(0xff095c06);
-  static const lightCanceladoText = Color.fromARGB(255, 110, 7, 7);
+  static const lightEnviadoText = Color.fromARGB(255, 24, 143, 20);
+  static const lightCanceladoText = Color.fromARGB(255, 158, 25, 25);
   static const lightTertiaryText = Color.fromARGB(255, 185, 213, 231);
   static const lightTertiaryBackground = Color.fromARGB(255, 52, 100, 163);
   static const lightSnackBarBg = Color.fromARGB(255, 182, 205, 236);
   static const lightSnackBarText = Color.fromARGB(255, 6, 58, 126);
+  static const lightAlertaBg = Color.fromARGB(255, 240, 231, 202);
+  static const lightAlertaText = Color.fromARGB(255, 219, 170, 10);
 
   static const grey = Color.fromARGB(255, 95, 95, 95);
 }

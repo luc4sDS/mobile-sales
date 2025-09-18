@@ -65,7 +65,8 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
     clienteNovo = cliente.cliCnpj.isEmpty;
 
     _futureContatos = _cliController.getClienteContatos(cliente.cliCnpj);
-    _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj);
+    _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj,
+        incluirPadrao: false);
 
     carregaTextFields();
   }
@@ -104,8 +105,8 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
         if (mounted) Navigator.of(context).pop();
 
         setState(() {
-          _futureEnderecos =
-              _cliController.getClienteEnderecos(cliente.cliCnpj);
+          _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj,
+              incluirPadrao: false);
         });
       } else {
         if (mounted) {
@@ -138,18 +139,20 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
         .consultaCnpj(Utils().removeSpecialChars(_cnpjCte.text));
 
     _cnpjCte.text = result.numeroDeInscricao ?? _cnpjCte.text;
-    _razaoCte.text = result.nome ?? '';
-    _fantasiaCte.text = result.fantasia ?? '';
-    _telefoneCte.text = result.telefone ?? '';
-    _emailCte.text = result.email ?? '';
-    _enderecoCte.text = result.logradouro ?? '';
-    _numeroCte.text = result.numero ?? '';
-    _bairroCte.text = result.bairro ?? '';
-    _cepCte.text = result.cep ?? '';
-    _cidadeCte.text = result.municipio ?? '';
-    _complCte.text = result.complemento ?? '';
+    _razaoCte.text = result.nome ?? _razaoCte.text;
+    _fantasiaCte.text = result.fantasia ?? _fantasiaCte.text;
+    _telefoneCte.text = result.telefone ?? _telefoneCte.text;
+    _emailCte.text = result.email ?? _emailCte.text;
+    _enderecoCte.text = result.logradouro ?? _enderecoCte.text;
+    _numeroCte.text = result.numero ?? _numeroCte.text;
+    _bairroCte.text = result.bairro ?? _bairroCte.text;
+    _cepCte.text = result.cep ?? _cepCte.text;
+    _cidadeCte.text = result.municipio ?? _cidadeCte.text;
+    _complCte.text = result.complemento ?? _complCte.text;
 
-    selectedEstado = estados.indexOf(result.uf ?? '');
+    if (result.uf != null) {
+      selectedEstado = estados.indexOf(result.uf!);
+    }
 
     setState(() {
       consultandoCnpj = false;
@@ -198,7 +201,11 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
     if (_isDifferent(cliente.cliCidade, _cidadeCte)) return true;
     if (_isDifferent(cliente.cliCompl, _complCte)) return true;
 
-    if ((cliente.cliEstado ?? '') != estados[selectedEstado]) return true;
+    if (selectedEstado > -1) {
+      if ((cliente.cliEstado ?? '') != estados[selectedEstado]) return true;
+    } else {
+      return cliente.cliEstado != null;
+    }
 
     return false;
   }
@@ -358,8 +365,8 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
       if (res > 0) {
         setState(() {
-          _futureEnderecos =
-              _cliController.getClienteEnderecos(cliente.cliCnpj);
+          _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj,
+              incluirPadrao: false);
         });
 
         if (mounted) Navigator.of(context).pop();
@@ -385,8 +392,8 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
       if (res > 0) {
         setState(() {
-          _futureEnderecos =
-              _cliController.getClienteEnderecos(cliente.cliCnpj);
+          _futureEnderecos = _cliController.getClienteEnderecos(cliente.cliCnpj,
+              incluirPadrao: false);
         });
 
         if (mounted) Navigator.of(context).pop();
@@ -416,7 +423,10 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
           builder: (context) => CustomAlertDialog(
             tipo: 'CONFIRMAR',
             titulo: const Text('Confirmar'),
-            content: const Text('Descartar alterações?'),
+            content: const Text(
+              'Descartar alterações?',
+              textAlign: TextAlign.center,
+            ),
             actions: [
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
@@ -573,7 +583,9 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
                                                   height: 23,
                                                   width: 23,
                                                   child:
-                                                      CircularProgressIndicator())
+                                                      CircularProgressIndicator(
+                                                    strokeWidth: 3,
+                                                  ))
                                               : const Icon(
                                                   size: 24,
                                                   Icons.search,

@@ -35,6 +35,5 @@ class LoadingError extends StatelessWidget {
         ),
       ),
     );
-    ;
   }
 }

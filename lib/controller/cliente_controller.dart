@@ -18,7 +18,7 @@ class ClienteController {
     int statusCode = res.statusCode ?? 0;
 
     if (statusCode >= 200 && statusCode <= 210) {
-      if (res.data['result'] != null) {
+      if ((res.data['status'] as bool) && res.data['result'] != null) {
         return ConsultaCnpjResult.fromMap(
             res.data['result'] as Map<String, dynamic>);
       } else {
@@ -88,11 +88,54 @@ class ClienteController {
     return res.map((e) => ClienteContato.fromMap(e)).toList();
   }
 
-  Future<List<ClienteEndereco>> getClienteEnderecos(String cliCnpj) async {
+  Future<List<ClienteEndereco>> getClienteEnderecos(String cliCnpj,
+      {bool incluirPadrao = true}) async {
     final db = await DatabaseService().database;
 
-    final res = await db.query('CLIENTES_ENDERECOS',
-        where: 'CLIE_CLI = ?', whereArgs: [cliCnpj]);
+    late List<Map<String, Object?>> res;
+
+    if (incluirPadrao) {
+      res = await db.rawQuery('''
+      SELECT 
+        0 CLIE_SEQ, 
+        0 CLIE_ID,
+        ?1 CLIE_CLI,        
+        'ENDEREÇO PRINCIPAL' CLIE_DESCRICAO,
+        CLI_ENDERECO CLIE_ENDERECO,
+        CLI_NUMERO CLIE_NUMERO,
+        CLI_CEP CLIE_CEP,
+        CLI_BAIRRO CLIE_BAIRRO,
+        CLI_CIDADE CLIE_CIDADE,
+        CLI_ESTADO CLIE_ESTADO,
+        CLI_COMPL CLIE_COMPL,
+        'N' CLIE_ENVIA,
+        'N' CLIE_DELETADO,
+        'S' CLIE_ATIVO
+      FROM CLIENTES
+      WHERE CLI_CNPJ=?1
+      UNION ALL
+      SELECT 
+        CLIE_SEQ,
+        CLIE_ID,
+        CLIE_CLI,
+        CLIE_DESCRICAO,
+        CLIE_ENDERECO,
+        CLIE_NUMERO,
+        CLIE_CEP,
+        CLIE_BAIRRO,
+        CLIE_CIDADE,
+        CLIE_ESTADO,
+        CLIE_COMPL,
+        CLIE_ENVIA,
+        CLIE_DELETADO,
+        CLIE_ATIVO
+      FROM CLIENTES_ENDERECOS
+      WHERE CLIE_CLI=?1
+    ''', [cliCnpj]);
+    } else {
+      res = await db.query('CLIENTES_ENDERECOS',
+          where: 'CLIE_CLI = ?', whereArgs: [cliCnpj]);
+    }
 
     return res.map((e) => ClienteEndereco.fromMap(e)).toList();
   }

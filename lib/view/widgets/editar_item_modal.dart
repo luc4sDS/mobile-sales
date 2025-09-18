@@ -79,6 +79,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
     _descontoCte.text =
         ((widget.item.vdiDesc / widget.item.vdiPreco) * 100).toStringAsFixed(2);
     _obsCte.text = widget.item.vdiObs ?? '';
+    lanceCheckBoxValue = widget.item.vdiLance == 'S';
   }
 
   @override
@@ -109,6 +110,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
       vdiVlst: vlSt,
       vdiTotal: total,
       vdiTotalg: total,
+      vdiLance: lanceCheckBoxValue ? 'S' : 'N',
     );
 
     widget.onSave(item);
@@ -386,8 +388,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // produto?.prodCorte == 'S'
-                                  true
+                                  produto?.prodCorte == 'S'
                                       ? CustomCheckBox(
                                           value: lanceCheckBoxValue,
                                           onTap: () {

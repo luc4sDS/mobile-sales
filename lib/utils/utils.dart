@@ -18,7 +18,8 @@ class Utils {
     }
   }
 
-   Future<bool?> customShowDialog(String tipo, titulo, content, BuildContext context,
+  Future<bool?> customShowDialog(
+      String tipo, titulo, content, BuildContext context,
       {List<Widget>? actions}) async {
     return await showDialog(
       context: context,
@@ -26,7 +27,10 @@ class Utils {
         return CustomAlertDialog(
           tipo: tipo,
           titulo: Flexible(child: Text(titulo)),
-          content: Text(content),
+          content: Text(
+            content,
+            textAlign: TextAlign.center,
+          ),
           actions: actions ??
               [
                 TextButton(

@@ -93,6 +93,22 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                       child: Column(
                         spacing: 10,
                         children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Descrição',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.lighSecondaryText,
+                                ),
+                              ),
+                              CustomTextField(
+                                controller: _descCte,
+                              ),
+                            ],
+                          ),
                           Row(
                             spacing: 10,
                             children: [
@@ -253,27 +269,6 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                               ),
                             ],
                           ),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Descrição',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                  color: AppColors.lighSecondaryText,
-                                ),
-                              ),
-                              SizedBox(
-                                height: 150,
-                                child: CustomTextField(
-                                  controller: _descCte,
-                                  maxLines: null,
-                                  minLines: 10,
-                                ),
-                              ),
-                            ],
-                          ),
                         ],
                       ),
                     ),
@@ -308,7 +303,7 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                             clieCep: _cepCte.text.trim().toUpperCase(),
                             clieCidade: _cidadeCte.text.trim().toUpperCase(),
                             clieCompl: _complCte.text.trim().toUpperCase(),
-                            clieDescricao: _descCte.text.trim(),
+                            clieDescricao: _descCte.text.trim().toUpperCase(),
                             clieEstado: selectedEstadoIndex == -1
                                 ? ''
                                 : estados[selectedEstadoIndex],

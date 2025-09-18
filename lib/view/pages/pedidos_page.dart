@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
-import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/pages/novo_pedido_page.dart';
@@ -89,7 +88,9 @@ class _PedidosPageState extends State<PedidosPage> {
       }
 
       _vendasFuture = _vendaController.getVendas(
-          pesquisa: _pesquisaCtr.text, filtros: _filtros);
+        pesquisa: _pesquisaCtr.text,
+        filtros: _filtros,
+      );
     });
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
+import 'package:mobile_sales/controller/tabela_controller.dart';
 import 'package:mobile_sales/core/assets/app_images.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/database/database_services.dart';

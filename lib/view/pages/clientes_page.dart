@@ -100,12 +100,6 @@ class _ClientesPageState extends State<ClientesPage> {
                     return const Center(child: CircularProgressIndicator());
                   }
 
-                  if (!snapshot.hasData) {
-                    return const Center(
-                      child: Text('Não foi encontrado nenhum cliente'),
-                    );
-                  }
-
                   if (snapshot.hasError) {
                     return LoadingError(
                       title: 'Erro ao carregar clientes',
@@ -116,6 +110,12 @@ class _ClientesPageState extends State<ClientesPage> {
                               _clienteController.getClientes(_clienteCte.text);
                         })
                       },
+                    );
+                  }
+
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text('Não foi encontrado nenhum cliente'),
                     );
                   }
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:mobile_sales/controller/forma_pagamento_controller.dart';
 import 'package:mobile_sales/controller/meio_pagamento_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
@@ -8,6 +9,7 @@ import 'package:mobile_sales/controller/tipo_entrega_controller.dart';
 import 'package:mobile_sales/controller/vendas_controller.dart';
 import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
+import 'package:mobile_sales/model/cliente_endereco.dart';
 import 'package:mobile_sales/model/forma_pagamento.dart';
 import 'package:mobile_sales/model/meio_pagamento.dart';
 import 'package:mobile_sales/model/tipo_entrega.dart';
@@ -17,6 +19,7 @@ import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/adicionar_produto_modal.dart';
 import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/editar_item_modal.dart';
+import 'package:mobile_sales/view/widgets/escolher_endereco_modal.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
 import 'package:mobile_sales/view/widgets/venda_item_card.dart';
@@ -137,8 +140,32 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
+  void handleEnderecoChange(ClienteEndereco endereco) async {
+    venda = venda.copyWith(
+      vndEnderecoEnt: endereco.clieEndereco,
+      vndNumeroEnt: endereco.clieNumero,
+      vndBairroEnt: endereco.clieBairro,
+      vndCidadeEnt: endereco.clieCidade,
+      vndEstadoEnt: endereco.clieEstado,
+      vndComplEnt: endereco.clieCompl,
+      vndCepEnt: endereco.clieCep,
+    );
+
+    _vendaController.salvarVenda(venda);
+
+    setState(() {});
+  }
+
   void handleEditarItem(VendaItem item, int index) async {
     try {
+      final erros = validaItem(item);
+
+      if (erros.isNotEmpty) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro ao salvar item', erros.join('\n\n'), context);
+        return;
+      }
+
       venda.itens[index] = item;
       venda = _vendaController.totalizar(venda);
       await _vendaController.salvarVenda(venda);
@@ -151,16 +178,26 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     }
   }
 
+  List<String> validaItem(VendaItem item) {
+    List<String> erros = [];
+
+    if (item.vdiPmin == 0 && item.vdiUnit < item.vdiPreco) {
+      erros.add('Descontos neste produto não são permitidos.');
+    }
+
+    // Validar
+    if (item.vdiQtd == 0) erros.add('Quantidade precisa ser maior que zero');
+    if (item.vdiUnit < item.vdiPmin) {
+      erros.add(
+          'Preço unitário menor que o permitido: ${item.vdiPmin.toStringAsFixed(2)}');
+    }
+
+    return erros;
+  }
+
   void handleAddItem(VendaItem item) async {
     try {
-      final List<String> erros = [];
-
-      // Validar
-      if (item.vdiQtd == 0) erros.add('Quantidade precisa ser maior que zero');
-      if (item.vdiUnit < item.vdiPmin) {
-        erros.add(
-            'Preço unitário menor que o permitido: ${item.vdiPmin.toStringAsFixed(2)}');
-      }
+      final erros = validaItem(item);
 
       if (erros.isNotEmpty) {
         if (mounted) {
@@ -171,10 +208,13 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       }
 
       final vendaAtualizada = await _vendaController.addItem(venda, item);
-      // Adiciona o item e retorna a venda atualizada
-      setState(() {
-        venda = vendaAtualizada;
-      });
+      _vendasItensController.getVendaItens(venda.vndId).then(
+        (value) {
+          setState(() {
+            venda = vendaAtualizada.copyWith(itens: value);
+          });
+        },
+      );
 
       if (mounted) {
         Navigator.of(context).pop();
@@ -224,6 +264,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     _selectedTipoEntrega = getIndexByFieldValue<TipoEntrega, int>(
         _tiposEntrega, (e) => e.tpId, venda.vndEntrega ?? 0);
 
+    print(venda.vndEnviado);
+
     setState(() {
       loading = false;
     });
@@ -255,7 +297,14 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
           IconButton(
             icon: const Icon(Icons.more_vert),
             color: Colors.black,
-            onPressed: () {},
+            onPressed: () {
+              Utils().customShowDialog(
+                'ALERTA',
+                'Erro ao executar',
+                'O Pedido não pode ser executado pois não esta formatado em tal formato',
+                context,
+              );
+            },
           )
         ],
       ),
@@ -271,7 +320,23 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                   Padding(
                     padding: const EdgeInsets.all(8),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        const Text(
+                          'Emissão',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.lighSecondaryText,
+                          ),
+                        ),
+                        Text(
+                          DateFormat('dd/MM/yyyy').format(venda.vndDataHora),
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                        const SizedBox(
+                          height: 10,
+                        ),
                         Wrap(
                           runSpacing: 10,
                           direction: Axis.horizontal,
@@ -310,6 +375,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                               padding: const EdgeInsets.all(8.0),
                               child: SingleChildScrollView(
                                 child: Column(
+                                  spacing: 8,
                                   children: [
                                     Container(
                                       decoration: BoxDecoration(
@@ -357,7 +423,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                       venda.vndCliCod
                                                           .toString(),
                                                       style: const TextStyle(
-                                                          fontSize: 18),
+                                                          fontSize: 16),
                                                     ),
                                                   ],
                                                 ),
@@ -387,7 +453,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                               style:
                                                                   const TextStyle(
                                                                       fontSize:
-                                                                          18),
+                                                                          16),
                                                             ),
                                                           ),
                                                         ],
@@ -439,8 +505,12 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   ),
                                                 ),
                                                 CustomTextField(
-                                                  enabled:
-                                                      venda.vndEnviado == 'N',
+                                                  onTapOutside: (_) {
+                                                    FocusScope.of(context)
+                                                        .unfocus();
+                                                  },
+                                                  readOnly:
+                                                      venda.vndEnviado != 'N',
                                                   onChanged: (_) =>
                                                       handleEmailChange(),
                                                   controller: _emailCte,
@@ -458,7 +528,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(height: 8),
                                     Container(
                                       decoration: BoxDecoration(
                                         borderRadius: const BorderRadius.all(
@@ -592,6 +661,266 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 });
                                               },
                                             ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        borderRadius: const BorderRadius.all(
+                                          Radius.circular(8),
+                                        ),
+                                        // color:
+                                        //     AppColors.lightSecondaryBackground,
+                                        border: Border.all(
+                                            color: AppColors.lighSecondaryText
+                                                .withValues(alpha: 0.4),
+                                            width: 1),
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      const Text(
+                                                        'Endereço',
+                                                        style: TextStyle(
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: AppColors
+                                                                .primary),
+                                                      ),
+                                                      const Text(
+                                                        'Endereço',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: AppColors
+                                                              .lighSecondaryText,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        venda.vndEnderecoEnt ??
+                                                            '',
+                                                        style: const TextStyle(
+                                                            fontSize: 16),
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                IconButton(
+                                                  onPressed: venda.vndEnviado !=
+                                                          'N'
+                                                      ? null
+                                                      : () async {
+                                                          final selectedEndereco =
+                                                              await showModalBottomSheet<
+                                                                  ClienteEndereco?>(
+                                                            isScrollControlled:
+                                                                true,
+                                                            backgroundColor:
+                                                                Colors
+                                                                    .transparent,
+                                                            useSafeArea: true,
+                                                            context: context,
+                                                            builder: (_) =>
+                                                                EscolherEnderecoModal(
+                                                                    cliCnpj:
+                                                                        venda.vndCliCnpj ??
+                                                                            ''),
+                                                          );
+
+                                                          if (selectedEndereco ==
+                                                              null) {
+                                                            return;
+                                                          }
+
+                                                          handleEnderecoChange(
+                                                              selectedEndereco);
+                                                        },
+                                                  icon: const Icon(
+                                                    Icons.search,
+                                                    color: Colors.white,
+                                                  ),
+                                                  style: ButtonStyle(
+                                                    backgroundColor:
+                                                        WidgetStateColor
+                                                            .resolveWith(
+                                                      (_) {
+                                                        return AppColors
+                                                            .primary;
+                                                      },
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                            Wrap(
+                                              spacing: 10,
+                                              runSpacing: 10,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'Número',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: AppColors
+                                                            .lighSecondaryText,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      venda.vndNumeroEnt ?? '',
+                                                      style: const TextStyle(
+                                                          fontSize: 16),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                    ),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'Bairro',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: AppColors
+                                                            .lighSecondaryText,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      venda.vndBairroEnt ?? '',
+                                                      style: const TextStyle(
+                                                          fontSize: 16),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            Wrap(
+                                              spacing: 10,
+                                              runSpacing: 10,
+                                              children: [
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'Cidade',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: AppColors
+                                                            .lighSecondaryText,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      venda.vndCidadeEnt ?? '',
+                                                      style: const TextStyle(
+                                                          fontSize: 16),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                    ),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'Estado',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: AppColors
+                                                            .lighSecondaryText,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      venda.vndEstadoEnt ?? '',
+                                                      style: const TextStyle(
+                                                          fontSize: 16),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                    ),
+                                                  ],
+                                                ),
+                                                Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Text(
+                                                      'CEP',
+                                                      style: TextStyle(
+                                                        fontSize: 12,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color: AppColors
+                                                            .lighSecondaryText,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      venda.vndCepEnt ?? '',
+                                                      style: const TextStyle(
+                                                          fontSize: 16),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                    ),
+                                                  ],
+                                                ),
+                                              ],
+                                            ),
+                                            (venda.vndComplEnt ?? '')
+                                                    .trim()
+                                                    .isEmpty
+                                                ? const SizedBox.shrink()
+                                                : Column(
+                                                    children: [
+                                                      const Text(
+                                                        'Complemento',
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          fontWeight:
+                                                              FontWeight.w500,
+                                                          color: AppColors
+                                                              .lighSecondaryText,
+                                                        ),
+                                                      ),
+                                                      Text(
+                                                        venda.vndCepEnt ?? '',
+                                                        style: const TextStyle(
+                                                            fontSize: 16),
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                      ),
+                                                    ],
+                                                  ),
                                           ],
                                         ),
                                       ),

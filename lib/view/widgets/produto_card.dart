@@ -69,7 +69,7 @@ class ProdutoCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       const Text(
-                        'Preco: ',
+                        'Preço: ',
                         style: TextStyle(
                             color: AppColors.lighSecondaryText,
                             fontWeight: FontWeight.w500),
