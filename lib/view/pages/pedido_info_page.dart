@@ -17,10 +17,12 @@ import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:mobile_sales/view/widgets/adicionar_produto_modal.dart';
+import 'package:mobile_sales/view/widgets/cliente_endereco_card.dart';
 import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/editar_item_modal.dart';
 import 'package:mobile_sales/view/widgets/escolher_endereco_modal.dart';
 import 'package:mobile_sales/view/widgets/list_search_modal.dart';
+import 'package:mobile_sales/view/widgets/pedido_options_button.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
 import 'package:mobile_sales/view/widgets/venda_item_card.dart';
 import 'package:mobile_sales/view/widgets/venda_situacao_chip.dart';
@@ -47,7 +49,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   int _selectedMeioPagamento = -1;
   int _selectedTipoEntrega = 1;
   bool loading = true;
-  Timer? _emailTimer;
+  Timer? _timer;
 
   final _parametrosController = ParametrosController();
   final _vendasItensController = VendasItensController();
@@ -57,6 +59,10 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   final _vendaController = VendasController();
 
   final _emailCte = TextEditingController();
+  final _prDescontoCte = TextEditingController();
+  final _vlDescontoCte = TextEditingController();
+  final _tabelaCte = TextEditingController();
+  final _obsCte = TextEditingController();
 
   int getIndexByFieldValue<T, A>(
       List<T> list, A Function(T) extractValue, A value) {
@@ -70,9 +76,9 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   }
 
   void handleEmailChange() async {
-    _emailTimer?.cancel();
+    _timer?.cancel();
 
-    _emailTimer = Timer(const Duration(milliseconds: 300), () {
+    _timer = Timer(const Duration(milliseconds: 300), () {
       venda = venda.copyWith(vndEmail: _emailCte.text);
 
       _vendaController.salvarVenda(venda);
@@ -105,7 +111,10 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                 await _vendasItensController.getVendaItens(widget.venda.vndId);
             venda = venda.copyWith(itens: _itens);
             venda = _vendaController.totalizar(venda);
-            await _vendaController.salvarVenda(venda);
+            await _vendaController.salvarVenda(venda).then((_) => setState(() {
+                  _prDescontoCte.text = venda.vndPrDesconto.toStringAsFixed(2);
+                  _vlDescontoCte.text = venda.vndDesconto.toStringAsFixed(2);
+                }));
 
             if (mounted) {
               Navigator.of(context).pop();
@@ -128,8 +137,10 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
             }
           }
         } catch (e) {
-          Utils().customShowDialog(
-              'ERRO', 'Erro ao remover item', 'Erro desconhecido.', context);
+          if (mounted) {
+            Utils().customShowDialog(
+                'ERRO', 'Erro ao remover item', 'Erro desconhecido.', context);
+          }
         }
       } else {
         if (mounted) {
@@ -181,7 +192,11 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   List<String> validaItem(VendaItem item) {
     List<String> erros = [];
 
-    if (item.vdiPmin == 0 && item.vdiUnit < item.vdiPreco) {
+    print('${item.vdiUnit} - ${item.vdiPreco}');
+
+    if (item.vdiPmin == 0 &&
+        num.parse(item.vdiUnit.toStringAsFixed(2)) <
+            num.parse(item.vdiPreco.toStringAsFixed(2))) {
       erros.add('Descontos neste produto não são permitidos.');
     }
 
@@ -212,6 +227,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
         (value) {
           setState(() {
             venda = vendaAtualizada.copyWith(itens: value);
+            _vlDescontoCte.text = venda.vndDesconto.toStringAsFixed(2);
+            _prDescontoCte.text = venda.vndPrDesconto.toStringAsFixed(2);
           });
         },
       );
@@ -249,9 +266,12 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     _itens = await _vendasItensController.getVendaItens(widget.venda.vndId);
     venda = venda.copyWith(itens: _itens);
 
-    print(_itens);
-
     _emailCte.text = venda.vndEmail ?? '';
+    _prDescontoCte.text = venda.vndPrDesconto.toStringAsFixed(2);
+    _vlDescontoCte.text = venda.vndDesconto.toStringAsFixed(2);
+    _tabelaCte.text = venda.vndPrAcrescimo.toStringAsFixed(2);
+    _obsCte.text = venda.vndObs ?? '';
+
     await _parametrosController.getParametros();
     _formasPagamento = await _formaPagamentoController.getAll();
     _meiosPagamento = await _meioPagamentoController.getAll();
@@ -264,8 +284,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     _selectedTipoEntrega = getIndexByFieldValue<TipoEntrega, int>(
         _tiposEntrega, (e) => e.tpId, venda.vndEntrega ?? 0);
 
-    print(venda.vndEnviado);
-
     setState(() {
       loading = false;
     });
@@ -274,6 +292,62 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   void handleFormasPagamentoSearch(String text) async {
     _formasPagamento = await _formaPagamentoController.getFormasPagamento(text);
   }
+
+  void handlePrDescontoChange(String text) {
+    _timer?.cancel();
+
+    _timer = Timer(const Duration(milliseconds: 400), () async {
+      final prDesc = double.tryParse(text);
+
+      if (prDesc != null) {
+        venda =
+            _vendaController.totalizar(venda.copyWith(vndPrDesconto: prDesc));
+        await _vendaController.salvarVenda(venda).then(
+              (_) => setState(
+                () {
+                  _vlDescontoCte.text = venda.vndDesconto.toStringAsFixed(2);
+                },
+              ),
+            );
+      }
+    });
+  }
+
+  void handleVlDescontoChange(String text) {
+    _timer?.cancel();
+
+    _timer = Timer(const Duration(milliseconds: 400), () async {
+      final vlDesc = double.tryParse(text);
+
+      if (vlDesc != null) {
+        venda = _vendaController.totalizar(
+            venda.copyWith(vndDesconto: vlDesc), 'VL');
+        await _vendaController.salvarVenda(venda).then(
+              (_) => setState(
+                () {
+                  _prDescontoCte.text = venda.vndPrDesconto.toStringAsFixed(2);
+                },
+              ),
+            );
+      }
+    });
+  }
+
+  void handleTabelaChange(String text) {
+    _timer?.cancel();
+
+    _timer = Timer(const Duration(milliseconds: 400), () async {
+      final prAcresc = double.tryParse(text);
+
+      if (prAcresc != null) {
+        venda = _vendaController
+            .totalizar(venda.copyWith(vndPrAcrescimo: prAcresc / 100));
+        await _vendaController.salvarVenda(venda).then((_) => setState(() {}));
+      }
+    });
+  }
+
+  void handleOptionsSelect(MenuOption option) async {}
 
   @override
   void initState() {
@@ -294,18 +368,10 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
             padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
             child: VendaSituacaoChip(situacao: venda.vndEnviado),
           ),
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            color: Colors.black,
-            onPressed: () {
-              Utils().customShowDialog(
-                'ALERTA',
-                'Erro ao executar',
-                'O Pedido não pode ser executado pois não esta formatado em tal formato',
-                context,
-              );
-            },
-          )
+          PedidoOptionsButton(
+            vndEnviado: venda.vndEnviado,
+            onSelect: (item) => handleOptionsSelect(item),
+          ),
         ],
       ),
       body: loading
@@ -347,8 +413,13 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                 label: 'Total Pedido', valor: venda.vndTotal),
                             ValorCard(
                                 label: 'Total Produtos', valor: venda.vndValor),
-                            ValorCard(
-                                label: 'Total ST', valor: venda.vndTotalSt)
+                            _parametrosController.parametros?.parCnpj ==
+                                    '06145442000102'
+                                ? ValorCard(
+                                    label: 'Total Bon.',
+                                    valor: venda.vndTotalBonificacao)
+                                : ValorCard(
+                                    label: 'Total ST', valor: venda.vndTotalSt)
                           ],
                         ),
                       ],
@@ -683,75 +754,61 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
+                                            const Text(
+                                              'Endereço',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w500,
+                                                  color: AppColors.primary),
+                                            ),
                                             Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
                                               children: [
                                                 Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      const Text(
-                                                        'Endereço',
-                                                        style: TextStyle(
-                                                            fontWeight:
-                                                                FontWeight.w500,
-                                                            color: AppColors
-                                                                .primary),
-                                                      ),
-                                                      const Text(
-                                                        'Endereço',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: AppColors
-                                                              .lighSecondaryText,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        venda.vndEnderecoEnt ??
-                                                            '',
-                                                        style: const TextStyle(
-                                                            fontSize: 16),
-                                                        overflow:
-                                                            TextOverflow.clip,
-                                                      ),
-                                                    ],
+                                                  child: ClienteEnderecoCard(
+                                                    hideTextOverflow: false,
+                                                    showDescricao: false,
+                                                    endereco: ClienteEndereco(
+                                                        clieSeq: 0,
+                                                        clieEndereco: venda
+                                                            .vndEnderecoEnt,
+                                                        clieNumero:
+                                                            venda.vndNumeroEnt,
+                                                        clieBairro:
+                                                            venda.vndBairroEnt,
+                                                        clieCidade:
+                                                            venda.vndCidadeEnt,
+                                                        clieEstado:
+                                                            venda.vndEstadoEnt,
+                                                        clieCep:
+                                                            venda.vndCepEnt,
+                                                        clieCompl:
+                                                            venda.vndComplEnt),
                                                   ),
                                                 ),
                                                 IconButton(
-                                                  onPressed: venda.vndEnviado !=
-                                                          'N'
-                                                      ? null
-                                                      : () async {
-                                                          final selectedEndereco =
-                                                              await showModalBottomSheet<
-                                                                  ClienteEndereco?>(
-                                                            isScrollControlled:
-                                                                true,
-                                                            backgroundColor:
-                                                                Colors
-                                                                    .transparent,
-                                                            useSafeArea: true,
-                                                            context: context,
-                                                            builder: (_) =>
-                                                                EscolherEnderecoModal(
-                                                                    cliCnpj:
-                                                                        venda.vndCliCnpj ??
-                                                                            ''),
-                                                          );
+                                                  onPressed: () async {
+                                                    final selectedEndereco =
+                                                        await showModalBottomSheet<
+                                                            ClienteEndereco?>(
+                                                      isScrollControlled: true,
+                                                      backgroundColor:
+                                                          Colors.transparent,
+                                                      useSafeArea: true,
+                                                      context: context,
+                                                      builder: (_) =>
+                                                          EscolherEnderecoModal(
+                                                              cliCnpj: venda
+                                                                      .vndCliCnpj ??
+                                                                  ''),
+                                                    );
 
-                                                          if (selectedEndereco ==
-                                                              null) {
-                                                            return;
-                                                          }
+                                                    if (selectedEndereco ==
+                                                        null) {
+                                                      return;
+                                                    }
 
-                                                          handleEnderecoChange(
-                                                              selectedEndereco);
-                                                        },
+                                                    handleEnderecoChange(
+                                                        selectedEndereco);
+                                                  },
                                                   icon: const Icon(
                                                     Icons.search,
                                                     color: Colors.white,
@@ -769,158 +826,6 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 )
                                               ],
                                             ),
-                                            Wrap(
-                                              spacing: 10,
-                                              runSpacing: 10,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Número',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: AppColors
-                                                            .lighSecondaryText,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      venda.vndNumeroEnt ?? '',
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                      overflow:
-                                                          TextOverflow.clip,
-                                                    ),
-                                                  ],
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Bairro',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: AppColors
-                                                            .lighSecondaryText,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      venda.vndBairroEnt ?? '',
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                      overflow:
-                                                          TextOverflow.clip,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            Wrap(
-                                              spacing: 10,
-                                              runSpacing: 10,
-                                              children: [
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Cidade',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: AppColors
-                                                            .lighSecondaryText,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      venda.vndCidadeEnt ?? '',
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                      overflow:
-                                                          TextOverflow.clip,
-                                                    ),
-                                                  ],
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'Estado',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: AppColors
-                                                            .lighSecondaryText,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      venda.vndEstadoEnt ?? '',
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                      overflow:
-                                                          TextOverflow.clip,
-                                                    ),
-                                                  ],
-                                                ),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    const Text(
-                                                      'CEP',
-                                                      style: TextStyle(
-                                                        fontSize: 12,
-                                                        fontWeight:
-                                                            FontWeight.w500,
-                                                        color: AppColors
-                                                            .lighSecondaryText,
-                                                      ),
-                                                    ),
-                                                    Text(
-                                                      venda.vndCepEnt ?? '',
-                                                      style: const TextStyle(
-                                                          fontSize: 16),
-                                                      overflow:
-                                                          TextOverflow.clip,
-                                                    ),
-                                                  ],
-                                                ),
-                                              ],
-                                            ),
-                                            (venda.vndComplEnt ?? '')
-                                                    .trim()
-                                                    .isEmpty
-                                                ? const SizedBox.shrink()
-                                                : Column(
-                                                    children: [
-                                                      const Text(
-                                                        'Complemento',
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                          color: AppColors
-                                                              .lighSecondaryText,
-                                                        ),
-                                                      ),
-                                                      Text(
-                                                        venda.vndCepEnt ?? '',
-                                                        style: const TextStyle(
-                                                            fontSize: 16),
-                                                        overflow:
-                                                            TextOverflow.clip,
-                                                      ),
-                                                    ],
-                                                  ),
                                           ],
                                         ),
                                       ),
@@ -1025,14 +930,159 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                             ),
                             Padding(
                               padding: const EdgeInsets.all(8),
-                              child: Column(children: [
-                                ElevatedButton(
-                                  onPressed: () async {
-                                    _vendaController.totalizar(venda);
-                                  },
-                                  child: const Text('Test'),
-                                )
-                              ]),
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  children: [
+                                    _parametrosController
+                                                .parametros?.parDesconto ==
+                                            'N'
+                                        ? const SizedBox.shrink()
+                                        : Row(
+                                            children: [
+                                              Expanded(
+                                                child: Wrap(
+                                                  alignment:
+                                                      WrapAlignment.spaceAround,
+                                                  spacing: 10,
+                                                  runSpacing: 10,
+                                                  children: [
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        const Text(
+                                                          'Desconto (%)',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: AppColors
+                                                                .lighSecondaryText,
+                                                          ),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 100,
+                                                          child:
+                                                              CustomTextField(
+                                                            onChanged:
+                                                                handlePrDescontoChange,
+                                                            enabled: venda
+                                                                    .vndEnviado ==
+                                                                'N',
+                                                            controller:
+                                                                _prDescontoCte,
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    Column(
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .start,
+                                                      children: [
+                                                        const Text(
+                                                          'Desconto (R\$)',
+                                                          style: TextStyle(
+                                                            fontSize: 12,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            color: AppColors
+                                                                .lighSecondaryText,
+                                                          ),
+                                                        ),
+                                                        SizedBox(
+                                                          width: 100,
+                                                          child:
+                                                              CustomTextField(
+                                                            onChanged:
+                                                                handleVlDescontoChange,
+                                                            enabled: venda
+                                                                    .vndEnviado ==
+                                                                'N',
+                                                            controller:
+                                                                _vlDescontoCte,
+                                                            keyboardType:
+                                                                TextInputType
+                                                                    .number,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                    // Column(
+                                                    //   crossAxisAlignment:
+                                                    //       CrossAxisAlignment
+                                                    //           .start,
+                                                    //   children: [
+                                                    //     const Text(
+                                                    //       'Tabela (%)',
+                                                    //       style:
+                                                    //           TextStyle(
+                                                    //         fontSize:
+                                                    //             12,
+                                                    //         fontWeight:
+                                                    //             FontWeight
+                                                    //                 .w500,
+                                                    //         color: AppColors
+                                                    //             .lighSecondaryText,
+                                                    //       ),
+                                                    //     ),
+                                                    //     SizedBox(
+                                                    //       width: 100,
+                                                    //       child:
+                                                    //           CustomTextField(
+                                                    //         onChanged:
+                                                    //             handleTabelaChange,
+                                                    //         enabled:
+                                                    //             venda.vndEnviado ==
+                                                    //                 'N',
+                                                    //         controller:
+                                                    //             _tabelaCte,
+                                                    //         keyboardType:
+                                                    //             TextInputType
+                                                    //                 .number,
+                                                    //       ),
+                                                    //     ),
+                                                    //   ],
+                                                    // ),
+                                                  ],
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Observações',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w500,
+                                            color: AppColors.lighSecondaryText,
+                                          ),
+                                        ),
+                                        ConstrainedBox(
+                                          constraints: const BoxConstraints(
+                                              maxHeight: 150, maxWidth: 600),
+                                          child: CustomTextField(
+                                            enabled: venda.vndEnviado == 'N',
+                                            maxLines: null,
+                                            minLines: 10,
+                                            controller: _obsCte,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ],
                         ),

@@ -5,11 +5,15 @@ import 'package:mobile_sales/model/cliente_endereco.dart';
 class ClienteEnderecoCard extends StatelessWidget {
   final ClienteEndereco endereco;
   final Function()? onTap;
+  final bool? showDescricao;
+  final bool? hideTextOverflow;
 
   const ClienteEnderecoCard({
     super.key,
     required this.endereco,
     this.onTap,
+    this.showDescricao,
+    this.hideTextOverflow,
   });
 
   @override
@@ -17,11 +21,13 @@ class ClienteEnderecoCard extends StatelessWidget {
     return GestureDetector(
         onTap: onTap,
         child: DecoratedBox(
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
                 width: 1,
-                color: AppColors.lightSecondaryBackground,
+                color: (showDescricao ?? true)
+                    ? AppColors.lightSecondaryBackground
+                    : Colors.transparent,
               ),
             ),
           ),
@@ -29,24 +35,35 @@ class ClienteEnderecoCard extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Column(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      endereco.clieDescricao ?? '',
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w500),
-                    )
-                  ],
-                ),
+                (showDescricao ?? true)
+                    ? Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              overflow: (hideTextOverflow ?? true)
+                                  ? TextOverflow.ellipsis
+                                  : TextOverflow.clip,
+                              endereco.clieDescricao ?? '',
+                              style: const TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.w500),
+                            ),
+                          )
+                        ],
+                      )
+                    : const SizedBox.shrink(),
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         '${endereco.clieEndereco ?? '---'}${(endereco.clieNumero ?? '').isNotEmpty ? ', ${endereco.clieNumero}' : ''}',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        overflow: (hideTextOverflow ?? true)
+                            ? TextOverflow.ellipsis
+                            : TextOverflow.clip,
+                        style: TextStyle(
                             // fontWeight: FontWeight.w500,
-                            color: AppColors.lighSecondaryText),
+                            color: (showDescricao ?? true)
+                                ? AppColors.lighSecondaryText
+                                : AppColors.lightPrimaryText),
                       ),
                     ),
                   ],
@@ -56,9 +73,14 @@ class ClienteEnderecoCard extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${endereco.clieCidade ?? '---'} - ${endereco.clieEstado ?? ''}${(endereco.clieCep ?? '').isNotEmpty ? ', ${endereco.clieCep}' : ''}',
-                        overflow: TextOverflow.ellipsis,
-                        style:
-                            const TextStyle(color: AppColors.lighSecondaryText),
+                        overflow: (hideTextOverflow ?? true)
+                            ? TextOverflow.ellipsis
+                            : TextOverflow.clip,
+                        style: TextStyle(
+                          color: (showDescricao ?? true)
+                              ? AppColors.lighSecondaryText
+                              : AppColors.lightPrimaryText,
+                        ),
                       ),
                     ),
                   ],

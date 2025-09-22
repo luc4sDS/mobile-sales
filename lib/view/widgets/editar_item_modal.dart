@@ -49,6 +49,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
   final _unitarioCte = TextEditingController();
   final _descontoCte = TextEditingController();
   final _obsCte = TextEditingController();
+  final _descricaoCte = TextEditingController();
 
   //Variables
   late VendaItem item;
@@ -64,8 +65,6 @@ class _EditarItemModalState extends State<EditarItemModal> {
     final res = await _parametrosController.getParametros();
     _ultimasVendasFuture =
         _vendasController.getUltimasVendas(item.vdiProdCod, widget.cliCnpj);
-
-    print(await _ultimasVendasFuture);
 
     if (res.isEmpty) {
       parametros = _parametrosController.parametros;
@@ -274,12 +273,17 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                         Row(
                                           children: [
                                             Expanded(
-                                              child: Text(
-                                                item.vdiDescricao,
-                                                style: const TextStyle(
-                                                    fontSize: 18),
-                                                overflow: TextOverflow.visible,
-                                              ),
+                                              child: item.vdiProdCod == 0
+                                                  ? CustomTextField(
+                                                      controller: _descricaoCte,
+                                                    )
+                                                  : Text(
+                                                      item.vdiDescricao,
+                                                      style: const TextStyle(
+                                                          fontSize: 18),
+                                                      overflow:
+                                                          TextOverflow.visible,
+                                                    ),
                                             ),
                                           ],
                                         )
@@ -423,6 +427,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                 ],
                               ),
                               Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const Text(
                                     'Observações',

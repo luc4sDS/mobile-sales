@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
-import 'package:mobile_sales/core/configs/theme/app_theme.dart';
 
 class CustomNavBar extends StatelessWidget {
   final int selectedIndex;

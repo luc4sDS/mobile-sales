@@ -56,11 +56,23 @@ class _ListSearchModalState<T> extends State<ListSearchModal<T>> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(8),
-              child: Text(
-                widget.data.isEmpty || widget.selectedIndex == -1
-                    ? ''
-                    : widget.extractName(widget.data[widget.selectedIndex]),
-                overflow: TextOverflow.ellipsis,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.data.isEmpty || widget.selectedIndex == -1
+                          ? ''
+                          : widget
+                              .extractName(widget.data[widget.selectedIndex]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Icon(
+                    Icons.menu_open,
+                    size: 20,
+                    color: AppColors.lighSecondaryText,
+                  )
+                ],
               ),
             )),
       ),

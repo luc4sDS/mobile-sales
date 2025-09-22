@@ -61,6 +61,52 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
     });
   }
 
+  void handleAvulsoTap() async {
+    _pesquisaFocusNode.unfocus();
+
+    final item = VendaItem(
+      vdiVndId: widget.vendaId,
+      vdiVndChave: widget.vendaChave,
+      vdiProdCod: 0,
+      vdiEan: '',
+      vdiDescricao: '',
+      vdiQtd: 0,
+      vdiAlinter: 0,
+      vdiAlintra: 0,
+      vdiRedbase: 0,
+      vdiAlipi: 0,
+      vdiMva: 0,
+      vdiPeso: 0,
+      vdiUnit: 0,
+      vdiTotal: 0,
+      vdiDesc: 0,
+      vdiTotalg: 0,
+      vdiPreco: 0,
+      vdiPmin: 0,
+      vdiCusto: 0,
+      vdiPbonificacao: 0,
+    );
+
+    if (mounted) {
+      showModalBottomSheet(
+        useSafeArea: true,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        context: context,
+        builder: (context) {
+          return EditarItemModal(
+            onDelete: (_) {},
+            cliCnpj: widget.cliCnpj,
+            estado: widget.vendaEstado,
+            item: item,
+            onSave: widget.onSave,
+            readOnly: false,
+          );
+        },
+      );
+    }
+  }
+
   void handleTap(Produto produto) async {
     _pesquisaFocusNode.unfocus();
 
@@ -161,19 +207,38 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
                         )
                       ],
                     ),
-                    TextField(
-                      focusNode: _pesquisaFocusNode,
-                      onChanged: (_) => {
-                        setState(() {
-                          _produtosFuture = _produtoController
-                              .getProdutos(_pesquisaCte.text, tabela: tabela);
-                        })
-                      },
-                      controller: _pesquisaCte,
-                      decoration: const InputDecoration(
-                        label: Text('Pesquisa'),
-                        suffixIcon: Icon(Icons.search),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            focusNode: _pesquisaFocusNode,
+                            onChanged: (_) => {
+                              setState(() {
+                                _produtosFuture = _produtoController
+                                    .getProdutos(_pesquisaCte.text,
+                                        tabela: tabela);
+                              })
+                            },
+                            controller: _pesquisaCte,
+                            decoration: const InputDecoration(
+                              label: Text('Pesquisa'),
+                              suffixIcon: Icon(Icons.search),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 7,
+                        ),
+                        IconButton(
+                            style: const ButtonStyle(
+                                backgroundColor: WidgetStateProperty.fromMap(
+                                    {WidgetState.any: AppColors.primary})),
+                            onPressed: handleAvulsoTap,
+                            icon: const Icon(
+                              Icons.add,
+                              color: Colors.white,
+                            ))
+                      ],
                     ),
                     loading
                         ? const Center(

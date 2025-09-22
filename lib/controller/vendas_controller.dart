@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/produto_st_controller.dart';
@@ -82,7 +84,7 @@ class VendasController {
     return Venda.fromMap(res[0]);
   }
 
-  Venda totalizar(Venda venda) {
+  Venda totalizar(Venda venda, [String prioridadeDesconto = 'PR']) {
     final itens = List<VendaItem>.from(venda.itens);
 
     //Valores da venda
@@ -93,13 +95,15 @@ class VendasController {
     double vendaTotalBonificacao = 0;
     double vendaSaldoBonificacao = 0;
     double vendaDesconto = 0;
+    double vendaPrDesconto = 0;
 
     for (var i = 0; i < itens.length; i++) {
       itens[i] =
           itens[i].copyWith(vdiTotal: itens[i].vdiUnit * itens[i].vdiQtd);
 
-      if (itens[i].vdiBonificado)
+      if (itens[i].vdiBonificado) {
         vendaTotalBonificacao = vendaTotalBonificacao + itens[i].vdiTotal;
+      }
       vendaValor = vendaValor + itens[i].vdiTotal;
       vendaTotalSt = vendaTotalSt + itens[i].vdiVlst;
       vendaTotalIPI = vendaTotalIPI + itens[i].vdiVlipi;
@@ -108,17 +112,20 @@ class VendasController {
       vendaTotal = vendaTotal + itens[i].vdiTotal;
     }
 
-    if (vendaValor > 0) {
-      if (venda.vndPrDesconto > 0) {
-        vendaDesconto = ((venda.vndPrDesconto / 100) * vendaValor);
-      } else {
-        vendaDesconto = 0;
-      }
+    if (prioridadeDesconto == 'PR') {
+      vendaDesconto = (venda.vndPrDesconto / 100) * vendaValor;
+      vendaPrDesconto = venda.vndPrDesconto;
     } else {
-      vendaDesconto = 0;
+      if (venda.vndValor > 0) {
+        vendaPrDesconto = (venda.vndDesconto / vendaValor) * 100;
+        vendaDesconto = venda.vndDesconto;
+      } else {
+        vendaPrDesconto = 0;
+        vendaDesconto = venda.vndDesconto;
+      }
     }
 
-    vendaTotal = vendaValor - vendaDesconto;
+    vendaTotal = max(vendaValor - vendaDesconto, 0);
 
     return venda.copyWith(
       vndTotal: vendaTotal,
@@ -128,6 +135,7 @@ class VendasController {
       vndSaldoBonificacao: vendaSaldoBonificacao,
       vndValor: vendaValor,
       vndDesconto: vendaDesconto,
+      vndPrDesconto: vendaPrDesconto,
     );
   }
 

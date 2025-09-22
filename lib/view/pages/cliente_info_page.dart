@@ -99,6 +99,30 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
 
   void handleDeleteEndereco(int seq) async {
     try {
+      final confirmResult = await Utils().customShowDialog(
+        'ALERTA',
+        'Confirmar',
+        'Excluir este endereço?',
+        context,
+        actions: [
+          ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Sim')),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop(false);
+            },
+            child: const Text('Não'),
+          ),
+        ],
+      );
+
+      if (!(confirmResult ?? false)) {
+        return;
+      }
+
       final res = await _cliController.deleteEnderecoBySeq(seq);
 
       if (res > 0) {
@@ -421,7 +445,7 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
         final shouldPop = await showDialog<bool>(
           context: context,
           builder: (context) => CustomAlertDialog(
-            tipo: 'CONFIRMAR',
+            tipo: 'ALERTA',
             titulo: const Text('Confirmar'),
             content: const Text(
               'Descartar alterações?',

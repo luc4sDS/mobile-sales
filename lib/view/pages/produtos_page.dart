@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/produto_controller.dart';
 import 'package:mobile_sales/model/produto.dart';
+import 'package:mobile_sales/view/pages/produto_info_page.dart';
 import 'package:mobile_sales/view/widgets/loading_error.dart';
 import 'package:mobile_sales/view/widgets/main_options_button.dart';
 import 'package:mobile_sales/view/widgets/produto_card.dart';
@@ -98,7 +99,15 @@ class _ProdutosPageState extends State<ProdutosPage> {
                           preco: produto.prodPreco,
                           embalagem: produto.prodEmbalagem,
                           pmin: produto.prodPmin ?? 0,
-                          onTap: () {},
+                          onTap: () {
+                            // FocusScope.of(context).unfocus();
+                            // Navigator.push(
+                            //   context,
+                            //   MaterialPageRoute<void>(
+                            //       builder: (context) =>
+                            //           ProdutosInfoPage(produto: produto)),
+                            // );
+                          },
                           valorBon: ((produto.prodPbonificacao ?? 0) *
                                   produto.prodPreco) /
                               100,
