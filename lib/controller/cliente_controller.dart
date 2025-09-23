@@ -46,7 +46,9 @@ class ClienteController {
 
     final List<Map<String, dynamic>> maps = await db.query('CLIENTES',
         where: where,
-        whereArgs: ['%${pesquisa.replaceAll(' ', '%')}%'],
+        whereArgs: [
+          pesquisaIsNumeric ? pesquisa : '%${pesquisa.replaceAll(' ', '%')}%'
+        ],
         orderBy: 'CLI_RAZAO ASC');
 
     clientes = List.generate(

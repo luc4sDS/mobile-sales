@@ -22,8 +22,15 @@ class AppTheme {
     ),
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
-        foregroundColor: AppColors.lighSecondaryText,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
+        foregroundColor: AppColors.primary,
+        textStyle: const TextStyle(
+          fontWeight: FontWeight.w500,
+          fontFamily: 'Poppins',
+          fontSize: 18,
+        ),
+        backgroundColor: AppColors.primary.withAlpha(20),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
       ),
     ),
     // iconButtonTheme: IconButtonThemeData(
@@ -38,7 +45,7 @@ class AppTheme {
     // ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.fromLTRB(25, 8, 25, 8),
+        padding: const EdgeInsets.fromLTRB(18, 8, 18, 8),
         foregroundColor: Colors.white,
         backgroundColor: AppColors.primary,
         textStyle: const TextStyle(
@@ -195,7 +202,7 @@ class AppTheme {
     textButtonTheme: TextButtonThemeData(
       style: TextButton.styleFrom(
         foregroundColor: AppColors.darkSecondaryText,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(3)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       ),
     ),
     textSelectionTheme: TextSelectionThemeData(

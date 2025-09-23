@@ -23,6 +23,7 @@ class EditarItemModal extends StatefulWidget {
   final void Function(VendaItem) onSave;
   final void Function(int itemId)? onDelete;
   final bool? readOnly;
+  final Function(VendaItem) onBonifica;
 
   const EditarItemModal({
     super.key,
@@ -32,6 +33,7 @@ class EditarItemModal extends StatefulWidget {
     required this.estado,
     required this.onDelete,
     required this.cliCnpj,
+    required this.onBonifica,
   });
 
   @override
@@ -63,8 +65,8 @@ class _EditarItemModalState extends State<EditarItemModal> {
     item = widget.item;
     produto = await _prodController.getProdutoById(item.vdiProdCod);
     final res = await _parametrosController.getParametros();
-    _ultimasVendasFuture =
-        _vendasController.getUltimasVendas(item.vdiProdCod, widget.cliCnpj);
+    _ultimasVendasFuture = _vendasController.getUltimasVendas(
+        item.vdiProdCod, widget.cliCnpj, item.vdiVndId);
 
     if (res.isEmpty) {
       parametros = _parametrosController.parametros;
@@ -75,8 +77,14 @@ class _EditarItemModalState extends State<EditarItemModal> {
     _qtdCte.text =
         widget.item.vdiQtd == 0 ? '' : widget.item.vdiQtd.toStringAsFixed(2);
     _unitarioCte.text = widget.item.vdiUnit.toStringAsFixed(2);
-    _descontoCte.text =
-        ((widget.item.vdiDesc / widget.item.vdiPreco) * 100).toStringAsFixed(2);
+    _descricaoCte.text = widget.item.vdiDescricao;
+
+    if (widget.item.vdiProdCod == 0) {
+      _descontoCte.text = '0.0';
+    } else {
+      _descontoCte.text = ((widget.item.vdiDesc / widget.item.vdiPreco) * 100)
+          .toStringAsFixed(2);
+    }
     _obsCte.text = widget.item.vdiObs ?? '';
     lanceCheckBoxValue = widget.item.vdiLance == 'S';
   }
@@ -93,7 +101,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
     });
   }
 
-  void handleSave(VendaItem item) async {
+  void handleSave(VendaItem item) {
     final qtd = double.tryParse(_qtdCte.text) ?? 0;
     final unit = double.tryParse(_unitarioCte.text) ?? 0;
     final desc = max<double>(0, item.vdiPreco - unit);
@@ -102,6 +110,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
         total, item.vdiAlintra, item.vdiAlinter, item.vdiMva, widget.estado);
 
     item = item.copyWith(
+      vdiDescricao: _descricaoCte.text.trim().toUpperCase(),
       vdiQtd: qtd,
       vdiUnit: unit,
       vdiDesc: desc,
@@ -110,9 +119,35 @@ class _EditarItemModalState extends State<EditarItemModal> {
       vdiTotal: total,
       vdiTotalg: total,
       vdiLance: lanceCheckBoxValue ? 'S' : 'N',
+      vdiVbonificacao: (item.vdiPbonificacao / 100) * item.vdiTotal,
     );
 
     widget.onSave(item);
+  }
+
+  void handleBonifica(VendaItem item) {
+    final qtd = double.tryParse(_qtdCte.text) ?? 0;
+    final unit = double.tryParse(_unitarioCte.text) ?? 0;
+    final desc = max<double>(0, item.vdiPreco - unit);
+    final total = qtd * unit;
+    final vlSt = Utils().calculaST(
+        total, item.vdiAlintra, item.vdiAlinter, item.vdiMva, widget.estado);
+
+    item = item.copyWith(
+      vdiDescricao: _descricaoCte.text.trim().toUpperCase(),
+      vdiQtd: qtd,
+      vdiUnit: unit,
+      vdiDesc: desc,
+      vdiObs: _obsCte.text,
+      vdiVlst: vlSt,
+      vdiTotal: total,
+      vdiTotalg: total,
+      vdiLance: lanceCheckBoxValue ? 'S' : 'N',
+      vdiVbonificacao: (item.vdiPbonificacao / 100) * item.vdiTotal,
+      vdiBonificado: true,
+    );
+
+    widget.onBonifica(item);
   }
 
   void handleDescChanged(String value) {
@@ -125,9 +160,10 @@ class _EditarItemModalState extends State<EditarItemModal> {
 
     final total = max<double>((unitario * (1 - (desc / 100))) * qtd, 0);
     final valorSt = max<double>(
-        Utils().calculaST(total, item.vdiAlintra, item.vdiAlinter, item.vdiMva,
-            widget.estado),
-        0);
+      Utils().calculaST(
+          total, item.vdiAlintra, item.vdiAlinter, item.vdiMva, widget.estado),
+      0,
+    );
 
     setState(() {
       item = item.copyWith(
@@ -154,6 +190,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
         vdiTotal: total,
         vdiTotalg: total,
         vdiVlst: valorSt,
+        vdiQtd: qtd,
       );
     });
   }
@@ -179,11 +216,11 @@ class _EditarItemModalState extends State<EditarItemModal> {
 
     setState(() {
       item = item.copyWith(
-        vdiTotal: total,
-        vdiTotalg: total,
-        vdiVlst: valorSt,
-        vdiDesc: desc,
-      );
+          vdiTotal: total,
+          vdiTotalg: total,
+          vdiVlst: valorSt,
+          vdiDesc: desc,
+          vdiUnit: unitario);
       _descontoCte.text = item.vdiDesc.toStringAsFixed(2);
     });
   }
@@ -346,7 +383,8 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                             onChanged: handleUnitChanged,
                                             enabled: !readOnly &&
                                                 (parametros?.parDesconto ==
-                                                    'S'),
+                                                        'S' ||
+                                                    item.vdiProdCod == 0),
                                             controller: _unitarioCte,
                                             textAlign: TextAlign.end,
                                             keyboardType: TextInputType.number,
@@ -376,7 +414,8 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                                 ),
                                                 CustomTextField(
                                                   onChanged: handleDescChanged,
-                                                  enabled: !readOnly,
+                                                  enabled: !readOnly &&
+                                                      item.vdiProdCod != 0,
                                                   controller: _descontoCte,
                                                   textAlign: TextAlign.end,
                                                   keyboardType:
@@ -503,53 +542,48 @@ class _EditarItemModalState extends State<EditarItemModal> {
                             ],
                           ),
                         ),
-                        !readOnly
-                            ? Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Row(
-                                  children: [
-                                    Expanded(
-                                      child: Wrap(
-                                        direction: Axis.horizontal,
-                                        alignment: WrapAlignment.spaceAround,
-                                        spacing: 10,
-                                        children: [
-                                          (item.vdiId ?? 0) != 0
-                                              ? ElevatedButton(
-                                                  style: ButtonStyle(
-                                                    backgroundColor:
-                                                        WidgetStateColor
-                                                            .resolveWith((_) =>
-                                                                AppColors.erro),
-                                                  ),
-                                                  onPressed: () =>
-                                                      widget.onDelete != null
-                                                          ? widget.onDelete!(
-                                                              item.vdiId ?? 0)
-                                                          : {},
-                                                  child: const Text('Excluir'),
-                                                )
-                                              : const SizedBox.shrink(),
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              handleSave(item);
-                                            },
-                                            child: const Text('Salvar'),
+                        if (!readOnly)
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Wrap(
+                                    direction: Axis.horizontal,
+                                    alignment: WrapAlignment.spaceAround,
+                                    children: [
+                                      if ((item.vdiId ?? 0) != 0)
+                                        ElevatedButton(
+                                          style: ButtonStyle(
+                                            backgroundColor:
+                                                WidgetStateColor.resolveWith(
+                                                    (_) => AppColors.erro),
                                           ),
-                                          produto?.prodBonifica == 'S'
-                                              ? TextButton(
-                                                  onPressed: () {},
-                                                  child:
-                                                      const Text('Bonificar'),
-                                                )
-                                              : const SizedBox.shrink(),
-                                        ],
+                                          onPressed: () => widget.onDelete !=
+                                                  null
+                                              ? widget
+                                                  .onDelete!(item.vdiId ?? 0)
+                                              : {},
+                                          child: const Text('Excluir'),
+                                        ),
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          handleSave(item);
+                                        },
+                                        child: const Text('Salvar'),
                                       ),
-                                    ),
-                                  ],
+                                      if ((produto?.prodBonifica == 'S' &&
+                                          (item.vdiId ?? 0) == 0))
+                                        TextButton(
+                                          onPressed: () => handleBonifica(item),
+                                          child: const Text('Bonificar'),
+                                        ),
+                                    ],
+                                  ),
                                 ),
-                              )
-                            : const SizedBox.shrink()
+                              ],
+                            ),
+                          ),
                       ],
                     ),
                   ),

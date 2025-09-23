@@ -151,6 +151,17 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
+  void handleBonificarItem(VendaItem item) async {
+    if (item.vdiTotal >
+        (venda.vndSaldoBonificacao - venda.vndTotalBonificacao)) {
+      Utils().customShowDialog('ERRO', 'Erro ao bonificar',
+          'Valor de bonificação maior que o saldo disponivel', context);
+      return;
+    }
+
+    handleAddItem(item);
+  }
+
   void handleEnderecoChange(ClienteEndereco endereco) async {
     venda = venda.copyWith(
       vndEnderecoEnt: endereco.clieEndereco,
@@ -192,19 +203,27 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   List<String> validaItem(VendaItem item) {
     List<String> erros = [];
 
-    print('${item.vdiUnit} - ${item.vdiPreco}');
-
     if (item.vdiPmin == 0 &&
         num.parse(item.vdiUnit.toStringAsFixed(2)) <
             num.parse(item.vdiPreco.toStringAsFixed(2))) {
       erros.add('Descontos neste produto não são permitidos.');
     }
 
-    // Validar
-    if (item.vdiQtd == 0) erros.add('Quantidade precisa ser maior que zero');
-    if (item.vdiUnit < item.vdiPmin) {
+    if (item.vdiQtd <= 0) erros.add('Quantidade precisa ser maior que zero');
+    if (num.parse(item.vdiUnit.toStringAsFixed(2)) <
+        num.parse(item.vdiPmin.toStringAsFixed(2))) {
       erros.add(
           'Preço unitário menor que o permitido: ${item.vdiPmin.toStringAsFixed(2)}');
+    }
+
+    if (item.vdiProdCod == 0) {
+      if (item.vdiDescricao.trim().isEmpty) {
+        erros.add('Forneça uma descrição para o produto.');
+      }
+
+      if (item.vdiUnit <= 0) {
+        erros.add('Valor unitário inválido');
+      }
     }
 
     return erros;
@@ -347,7 +366,9 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
-  void handleOptionsSelect(MenuOption option) async {}
+  void handleOptionsSelect(MenuOption option) async {
+    print('${venda.vndTotalBonificacao} - ${venda.vndSaldoBonificacao}');
+  }
 
   @override
   void initState() {
@@ -410,16 +431,24 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                           crossAxisAlignment: WrapCrossAlignment.start,
                           children: [
                             ValorCard(
-                                label: 'Total Pedido', valor: venda.vndTotal),
+                              label: 'Total Pedido',
+                              valor: venda.vndTotal,
+                            ),
                             ValorCard(
-                                label: 'Total Produtos', valor: venda.vndValor),
+                              label: 'Total Produtos',
+                              valor: venda.vndValor,
+                            ),
                             _parametrosController.parametros?.parCnpj ==
                                     '06145442000102'
                                 ? ValorCard(
-                                    label: 'Total Bon.',
-                                    valor: venda.vndTotalBonificacao)
+                                    label: 'Saldo Bon.',
+                                    valor: venda.vndSaldoBonificacao -
+                                        venda.vndTotalBonificacao,
+                                  )
                                 : ValorCard(
-                                    label: 'Total ST', valor: venda.vndTotalSt)
+                                    label: 'Total ST',
+                                    valor: venda.vndTotalSt,
+                                  )
                           ],
                         ),
                       ],
@@ -853,6 +882,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   context: context,
                                                   builder: (context) =>
                                                       AdicionarProdutoModal(
+                                                    onBonifica:
+                                                        handleBonificarItem,
                                                     cliCnpj:
                                                         venda.vndCliCnpj ?? '',
                                                     vendaChave:
@@ -902,6 +933,8 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 context: context,
                                                 builder: (context) =>
                                                     EditarItemModal(
+                                                  onBonifica:
+                                                      handleBonificarItem,
                                                   cliCnpj:
                                                       venda.vndCliCnpj ?? '',
                                                   onDelete: handleItemDelete,

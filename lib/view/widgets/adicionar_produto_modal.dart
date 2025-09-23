@@ -16,6 +16,7 @@ class AdicionarProdutoModal extends StatefulWidget {
   final double vendaPrAcrescimo;
   final String vendaEstado;
   final String cliCnpj;
+  final Function(VendaItem) onBonifica;
 
   const AdicionarProdutoModal({
     super.key,
@@ -25,6 +26,7 @@ class AdicionarProdutoModal extends StatefulWidget {
     required this.vendaPrAcrescimo,
     required this.vendaEstado,
     required this.cliCnpj,
+    required this.onBonifica,
   });
 
   @override
@@ -85,6 +87,7 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
       vdiPmin: 0,
       vdiCusto: 0,
       vdiPbonificacao: 0,
+      vdiVbonificacao: 0,
     );
 
     if (mounted) {
@@ -95,6 +98,7 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
         context: context,
         builder: (context) {
           return EditarItemModal(
+            onBonifica: widget.onBonifica,
             onDelete: (_) {},
             cliCnpj: widget.cliCnpj,
             estado: widget.vendaEstado,
@@ -146,6 +150,7 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
         context: context,
         builder: (context) {
           return EditarItemModal(
+            onBonifica: widget.onBonifica,
             onDelete: (_) {},
             cliCnpj: widget.cliCnpj,
             estado: widget.vendaEstado,

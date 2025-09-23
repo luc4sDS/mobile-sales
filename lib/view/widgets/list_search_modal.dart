@@ -170,7 +170,7 @@ class _ListSearchContainerState<T> extends State<ListSearchContainer<T>> {
                         ? Container(
                             decoration: BoxDecoration(
                                 color: index == _currentSelectedRecord
-                                    ? AppColors.lightTertiaryBackground
+                                    ? AppColors.primary
                                     : Colors.transparent,
                                 borderRadius:
                                     const BorderRadius.all(Radius.circular(8))),

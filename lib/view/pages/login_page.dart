@@ -143,30 +143,51 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   Column(
                     children: [
-                      ElevatedButton(
-                        onLongPress: () async {
-                          final db = DatabaseService();
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 350),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onLongPress: () async {
+                                  final db = DatabaseService();
 
-                          await db.deleteAllAppData();
-                        },
-                        onPressed: isLoading ? null : login,
-                        child: isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2.2,
-                                ),
-                              )
-                            : const Text('Entrar'),
+                                  await db.deleteAllAppData();
+                                },
+                                onPressed: isLoading ? null : login,
+                                child: isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          color: Colors.white,
+                                          strokeWidth: 2.2,
+                                        ),
+                                      )
+                                    : const Text('Entrar'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 10),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/primeiro_acesso');
-                        },
-                        child: const Text('Primeiro acesso'),
+                      ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 350),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: TextButton(
+                                onPressed: () {
+                                  Navigator.pushNamed(
+                                      context, '/primeiro_acesso');
+                                },
+                                child: const Text('Primeiro acesso'),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(
                         height: 100,

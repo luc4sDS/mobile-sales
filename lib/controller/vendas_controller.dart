@@ -244,8 +244,8 @@ class VendasController {
     }
   }
 
-  Future<List<UltimasVendas>> getUltimasVendas(
-      int prodId, String cliCnpj) async {
+  Future<List<UltimasVendas>> getUltimasVendas(int prodId, String cliCnpj,
+      [int? vndIdExcluir]) async {
     try {
       final db = await DatabaseService().database;
 
@@ -265,6 +265,7 @@ class VendasController {
           VDI_PROD_COD = ?
         AND
           VND_CLI_CNPJ = ?
+        ${vndIdExcluir != null ? 'AND VND_ID <> $vndIdExcluir' : ''}
         AND
           VND_ENVIADO IN ('S', 'P')
         ORDER BY
