@@ -367,7 +367,9 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   }
 
   void handleOptionsSelect(MenuOption option) async {
-    print('${venda.vndTotalBonificacao} - ${venda.vndSaldoBonificacao}');
+    setState(() {
+      venda = venda.copyWith(vndEnviado: 'P');
+    });
   }
 
   @override
@@ -813,46 +815,48 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                             venda.vndComplEnt),
                                                   ),
                                                 ),
-                                                IconButton(
-                                                  onPressed: () async {
-                                                    final selectedEndereco =
-                                                        await showModalBottomSheet<
-                                                            ClienteEndereco?>(
-                                                      isScrollControlled: true,
-                                                      backgroundColor:
-                                                          Colors.transparent,
-                                                      useSafeArea: true,
-                                                      context: context,
-                                                      builder: (_) =>
-                                                          EscolherEnderecoModal(
-                                                              cliCnpj: venda
-                                                                      .vndCliCnpj ??
-                                                                  ''),
-                                                    );
+                                                if (venda.vndEnviado == 'N')
+                                                  IconButton(
+                                                    onPressed: () async {
+                                                      final selectedEndereco =
+                                                          await showModalBottomSheet<
+                                                              ClienteEndereco?>(
+                                                        isScrollControlled:
+                                                            true,
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                        useSafeArea: true,
+                                                        context: context,
+                                                        builder: (_) =>
+                                                            EscolherEnderecoModal(
+                                                                cliCnpj: venda
+                                                                        .vndCliCnpj ??
+                                                                    ''),
+                                                      );
 
-                                                    if (selectedEndereco ==
-                                                        null) {
-                                                      return;
-                                                    }
+                                                      if (selectedEndereco ==
+                                                          null) {
+                                                        return;
+                                                      }
 
-                                                    handleEnderecoChange(
-                                                        selectedEndereco);
-                                                  },
-                                                  icon: const Icon(
-                                                    Icons.search,
-                                                    color: Colors.white,
-                                                  ),
-                                                  style: ButtonStyle(
-                                                    backgroundColor:
-                                                        WidgetStateColor
-                                                            .resolveWith(
-                                                      (_) {
-                                                        return AppColors
-                                                            .primary;
-                                                      },
+                                                      handleEnderecoChange(
+                                                          selectedEndereco);
+                                                    },
+                                                    icon: const Icon(
+                                                      Icons.search,
+                                                      color: Colors.white,
                                                     ),
-                                                  ),
-                                                )
+                                                    style: ButtonStyle(
+                                                      backgroundColor:
+                                                          WidgetStateColor
+                                                              .resolveWith(
+                                                        (_) {
+                                                          return AppColors
+                                                              .primary;
+                                                        },
+                                                      ),
+                                                    ),
+                                                  )
                                               ],
                                             ),
                                           ],
@@ -948,6 +952,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                 ),
                                               );
                                             },
+                                            vdiBonificado: item.vdiBonificado,
                                             vdiProdId: item.vdiProdCod,
                                             vdiDescricao: item.vdiDescricao,
                                             vdiQtd: item.vdiQtd,

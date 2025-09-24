@@ -65,12 +65,11 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
               onPressed: () => Navigator.of(context).pop(),
               icon: const Icon(
                 Icons.close,
-                color: Colors.white,
+                color: Colors.black,
               ),
-              color: AppColors.primary,
               style: ButtonStyle(
-                backgroundColor:
-                    WidgetStateProperty.resolveWith((state) => AppColors.erro),
+                backgroundColor: WidgetStateProperty.resolveWith(
+                    (state) => AppColors.lightBackground),
               ),
             )
           ]),

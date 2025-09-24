@@ -233,20 +233,55 @@ class _EditarItemModalState extends State<EditarItemModal> {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(
-                Icons.close,
-                color: Colors.white,
-              ),
-              color: AppColors.primary,
-              style: ButtonStyle(
-                backgroundColor:
-                    WidgetStateProperty.resolveWith((state) => AppColors.erro),
-              ),
-            )
-          ]),
+          child: Row(
+              mainAxisAlignment: readOnly
+                  ? MainAxisAlignment.end
+                  : MainAxisAlignment.spaceBetween,
+              children: [
+                if (!readOnly)
+                  Row(
+                    spacing: 10,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        style: ButtonStyle(
+                          backgroundColor:
+                              WidgetStateColor.resolveWith((_) => AppColors.ok),
+                        ),
+                        onPressed: () => handleSave(item),
+                        icon: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if ((item.vdiId ?? 0) != 0)
+                        IconButton(
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateColor.resolveWith(
+                                (_) => AppColors.erro),
+                          ),
+                          onPressed: () => widget.onDelete != null
+                              ? widget.onDelete!(item.vdiId ?? 0)
+                              : {},
+                          icon: const Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                          ),
+                        ),
+                    ],
+                  ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.black,
+                  ),
+                  style: ButtonStyle(
+                    backgroundColor: WidgetStateProperty.resolveWith(
+                        (state) => AppColors.lightBackground),
+                  ),
+                ),
+              ]),
         ),
         Expanded(
           child: DecoratedBox(
@@ -312,6 +347,7 @@ class _EditarItemModalState extends State<EditarItemModal> {
                                             Expanded(
                                               child: item.vdiProdCod == 0
                                                   ? CustomTextField(
+                                                      readOnly: readOnly,
                                                       controller: _descricaoCte,
                                                     )
                                                   : Text(
@@ -545,42 +581,27 @@ class _EditarItemModalState extends State<EditarItemModal> {
                         if (!readOnly)
                           Padding(
                             padding: const EdgeInsets.all(8.0),
-                            child: Row(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 10,
                               children: [
-                                Expanded(
-                                  child: Wrap(
-                                    direction: Axis.horizontal,
-                                    alignment: WrapAlignment.spaceAround,
-                                    children: [
-                                      if ((item.vdiId ?? 0) != 0)
-                                        ElevatedButton(
-                                          style: ButtonStyle(
-                                            backgroundColor:
-                                                WidgetStateColor.resolveWith(
-                                                    (_) => AppColors.erro),
+                                if ((produto?.prodBonifica == 'S' &&
+                                    (item.vdiId ?? 0) == 0))
+                                  ConstrainedBox(
+                                    constraints:
+                                        const BoxConstraints(maxWidth: 350),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: TextButton(
+                                            onPressed: () =>
+                                                handleBonifica(item),
+                                            child: const Text('Bonificar'),
                                           ),
-                                          onPressed: () => widget.onDelete !=
-                                                  null
-                                              ? widget
-                                                  .onDelete!(item.vdiId ?? 0)
-                                              : {},
-                                          child: const Text('Excluir'),
                                         ),
-                                      ElevatedButton(
-                                        onPressed: () {
-                                          handleSave(item);
-                                        },
-                                        child: const Text('Salvar'),
-                                      ),
-                                      if ((produto?.prodBonifica == 'S' &&
-                                          (item.vdiId ?? 0) == 0))
-                                        TextButton(
-                                          onPressed: () => handleBonifica(item),
-                                          child: const Text('Bonificar'),
-                                        ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
                               ],
                             ),
                           ),

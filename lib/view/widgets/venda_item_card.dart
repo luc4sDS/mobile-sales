@@ -7,6 +7,7 @@ class VendaItemCard extends StatelessWidget {
   final double vdiQtd;
   final double vdiUnit;
   final double vdiTotal;
+  final bool vdiBonificado;
   final void Function() onTap;
 
   const VendaItemCard({
@@ -17,6 +18,7 @@ class VendaItemCard extends StatelessWidget {
     required this.vdiUnit,
     required this.vdiTotal,
     required this.onTap,
+    required this.vdiBonificado,
   });
 
   @override
@@ -24,8 +26,9 @@ class VendaItemCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(),
       child: DecoratedBox(
-        decoration: const BoxDecoration(
-          border: Border(
+        decoration: BoxDecoration(
+          color: vdiBonificado ? AppColors.lightEnviadoBg : Colors.transparent,
+          border: const Border(
             bottom: BorderSide(
               width: 1,
               color: AppColors.lightSecondaryBackground,
