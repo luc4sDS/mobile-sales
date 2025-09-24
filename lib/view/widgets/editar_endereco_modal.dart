@@ -60,19 +60,65 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Row(mainAxisAlignment: MainAxisAlignment.end, children: [
-            IconButton(
-              onPressed: () => Navigator.of(context).pop(),
-              icon: const Icon(
-                Icons.close,
-                color: Colors.black,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                spacing: 10,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      final novoEndereco = widget.endereco.copyWith(
+                        clieAtivo: 'S',
+                        clieEndereco: _enderecoCte.text.trim().toUpperCase(),
+                        clieNumero: _numeroCte.text.trim().toUpperCase(),
+                        clieBairro: _bairroCte.text.trim().toUpperCase(),
+                        clieCep: _cepCte.text.trim().toUpperCase(),
+                        clieCidade: _cidadeCte.text.trim().toUpperCase(),
+                        clieCompl: _complCte.text.trim().toUpperCase(),
+                        clieDescricao: _descCte.text.trim().toUpperCase(),
+                        clieEstado: selectedEstadoIndex == -1
+                            ? ''
+                            : estados[selectedEstadoIndex],
+                      );
+
+                      widget.onSave(novoEndereco);
+                    },
+                    icon: const Icon(Icons.check, color: Colors.white),
+                    style: const ButtonStyle(
+                        backgroundColor: WidgetStateColor.fromMap(
+                            {WidgetState.any: AppColors.ok})),
+                  ),
+                  if (widget.onDelete != null)
+                    IconButton(
+                      onPressed: () =>
+                          widget.onDelete!(widget.endereco.clieSeq),
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStateColor.resolveWith(
+                          (_) => AppColors.erro,
+                        ),
+                      ),
+                      icon: const Icon(
+                        Icons.delete,
+                        color: Colors.white,
+                      ),
+                    ),
+                ],
               ),
-              style: ButtonStyle(
-                backgroundColor: WidgetStateProperty.resolveWith(
-                    (state) => AppColors.lightBackground),
-              ),
-            )
-          ]),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(
+                  Icons.close,
+                  color: Colors.black,
+                ),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.resolveWith(
+                      (state) => AppColors.lightBackground),
+                ),
+              )
+            ],
+          ),
         ),
         Expanded(
           child: DecoratedBox(
@@ -273,48 +319,6 @@ class _EditarEnderecoModalState extends State<EditarEnderecoModal> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(14.0),
-                  child: Row(
-                    spacing: 25,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      widget.onDelete == null
-                          ? const SizedBox.shrink()
-                          : ElevatedButton(
-                              onPressed: () =>
-                                  widget.onDelete!(widget.endereco.clieSeq),
-                              style: ButtonStyle(
-                                backgroundColor: WidgetStateColor.resolveWith(
-                                  (_) => AppColors.erro,
-                                ),
-                              ),
-                              child: const Text('Excluir'),
-                            ),
-                      ElevatedButton(
-                        onPressed: () {
-                          final novoEndereco = widget.endereco.copyWith(
-                            clieAtivo: 'S',
-                            clieEndereco:
-                                _enderecoCte.text.trim().toUpperCase(),
-                            clieNumero: _numeroCte.text.trim().toUpperCase(),
-                            clieBairro: _bairroCte.text.trim().toUpperCase(),
-                            clieCep: _cepCte.text.trim().toUpperCase(),
-                            clieCidade: _cidadeCte.text.trim().toUpperCase(),
-                            clieCompl: _complCte.text.trim().toUpperCase(),
-                            clieDescricao: _descCte.text.trim().toUpperCase(),
-                            clieEstado: selectedEstadoIndex == -1
-                                ? ''
-                                : estados[selectedEstadoIndex],
-                          );
-
-                          widget.onSave(novoEndereco);
-                        },
-                        child: const Text('Salvar'),
-                      ),
-                    ],
-                  ),
-                )
               ],
             ),
           ),
