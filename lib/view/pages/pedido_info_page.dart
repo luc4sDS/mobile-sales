@@ -406,6 +406,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
       _vendaController.salvarVenda(venda).then((_) {
         setState(() {});
         if (mounted) {
+          Navigator.of(context).pop();
           Utils().customShowDialog(
               'OK', 'Pedido enviado com sucesso!', '', context);
         }
