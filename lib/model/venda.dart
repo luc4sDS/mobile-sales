@@ -145,7 +145,7 @@ class Venda {
     buffer.writeln('  Tipo: ${vndEntrega ?? "N/A"}');
     buffer.writeln('  Nº Entrega: ${vndNEntrega ?? "N/A"}');
     if (vndLatitude != null && vndLongitude != null) {
-      buffer.writeln('  Localização: ${vndLatitude}, ${vndLongitude}');
+      buffer.writeln('  Localização: $vndLatitude, $vndLongitude');
     }
     buffer.writeln('----------------------------------------');
     buffer.writeln('Endereço de Entrega:');

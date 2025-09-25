@@ -26,9 +26,8 @@ class VendaItemCard extends StatelessWidget {
     return GestureDetector(
       onTap: () => onTap(),
       child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: vdiBonificado ? AppColors.lightEnviadoBg : Colors.transparent,
-          border: const Border(
+        decoration: const BoxDecoration(
+          border: Border(
             bottom: BorderSide(
               width: 1,
               color: AppColors.lightSecondaryBackground,
@@ -44,8 +43,9 @@ class VendaItemCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: RichText(
-                        overflow: TextOverflow.clip,
-                        text: TextSpan(children: [
+                      overflow: TextOverflow.clip,
+                      text: TextSpan(
+                        children: [
                           TextSpan(
                             text: vdiProdId.toString(),
                             style: const TextStyle(
@@ -60,10 +60,19 @@ class VendaItemCard extends StatelessWidget {
                             ),
                           ),
                           TextSpan(
-                              text: vdiDescricao,
-                              style: const TextStyle(
-                                  color: AppColors.lightPrimaryText)),
-                        ])),
+                            text: vdiDescricao,
+                            style: TextStyle(
+                              fontWeight: vdiBonificado
+                                  ? FontWeight.w500
+                                  : FontWeight.normal,
+                              color: vdiBonificado
+                                  ? AppColors.ok
+                                  : AppColors.lightPrimaryText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),

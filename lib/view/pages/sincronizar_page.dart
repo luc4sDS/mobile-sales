@@ -15,7 +15,7 @@ import 'package:mobile_sales/model/tabela.dart';
 import 'package:mobile_sales/model/tabela_preco.dart';
 import 'package:mobile_sales/model/tipo_entrega.dart';
 import 'package:mobile_sales/utils/utils.dart';
-import 'package:mobile_sales/view/widgets/CustomCheckBox.dart';
+import 'package:mobile_sales/view/widgets/custom_check_box.dart';
 
 class SincronizarPage extends StatefulWidget {
   const SincronizarPage({super.key});
@@ -92,7 +92,9 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (resultDownload != '') {
-      Utils().customShowDialog('ERRO', 'Erro!', resultDownload, context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!', resultDownload, context);
+      }
 
       setState(() {
         progressoText = 'Erro';
@@ -119,8 +121,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Clientes: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Clientes: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Clientes: $result';
       });
@@ -140,8 +144,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Contatos: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Contatos: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Conatos: $result';
       });
@@ -161,8 +167,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Endereços: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Endereços: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Endereços: $result';
       });
@@ -182,8 +190,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog('ERRO', 'Erro!',
-          'Erro ao sincronizar Formas de Pagamento: $result', context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!',
+            'Erro ao sincronizar Formas de Pagamento: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Formas de Pagamento: $result';
       });
@@ -203,8 +213,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog('ERRO', 'Erro!',
-          'Erro ao sincronizar Meios de Pagamento: $result', context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!',
+            'Erro ao sincronizar Meios de Pagamento: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Meios de Pagamento: $result';
       });
@@ -224,8 +236,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog('ERRO', 'Erro!',
-          'Erro ao sincronizar Tipos de Pagamento: $result', context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!',
+            'Erro ao sincronizar Tipos de Pagamento: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Tipos de Pagamento: $result';
       });
@@ -245,8 +259,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Impostos: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Impostos: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Impostos: $result';
       });
@@ -266,8 +282,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Produtos: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Produtos: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Produtos: $result';
       });
@@ -287,8 +305,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog('ERRO', 'Erro!',
-          'Erro ao sincronizar Tabela de Preços: $result', context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!',
+            'Erro ao sincronizar Tabela de Preços: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Tabela de Preços: $result';
       });
@@ -308,8 +328,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Tabelas: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Tabelas: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Tabelas: $result';
       });
@@ -329,8 +351,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog('ERRO', 'Erro!',
-          'Erro ao sincronizar Tipos de Entrega: $result', context);
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro!',
+            'Erro ao sincronizar Tipos de Entrega: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Tipos de Entrega: $result';
       });
@@ -347,8 +371,10 @@ class _SincronizarPageState extends State<SincronizarPage>
     );
 
     if (result != '') {
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Erro ao sincronizar Vendas: $result', context);
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Erro ao sincronizar Vendas: $result', context);
+      }
       setState(() {
         progressoText = 'Erro ao sincronizar Vendas: $result';
       });

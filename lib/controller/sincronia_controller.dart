@@ -14,7 +14,6 @@ import 'package:mobile_sales/model/tabela.dart';
 import 'package:mobile_sales/model/tabela_preco.dart';
 import 'package:mobile_sales/model/tipo_entrega.dart';
 import 'package:mobile_sales/model/venda.dart';
-import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -428,7 +427,7 @@ class SincroniaController {
 
     DateTime dataInicio = ultSincronia;
     DateTime dataLimite = DateTime.now();
-    Duration intervalo = Duration(days: 183); // Aproximadamente 6 meses
+    Duration intervalo = const Duration(days: 183); // Aproximadamente 6 meses
 
     while (dataInicio.isBefore(dataLimite)) {
       DateTime dataFim = dataInicio.add(intervalo);
@@ -455,7 +454,8 @@ class SincroniaController {
         return 'Erro ao baixar Vendas (${DateFormat('ddMMyyyy').format(dataInicio)} - ${DateFormat('ddMMyyyy').format(dataFim)}): ${resultVendas.error}';
       }
 
-      dataInicio = dataFim.add(Duration(days: 1)); // Avança para o próximo dia
+      dataInicio =
+          dataFim.add(const Duration(days: 1)); // Avança para o próximo dia
     }
 
     return '';

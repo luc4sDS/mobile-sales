@@ -9,14 +9,14 @@ class CustomExpansionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExpansionTile(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         side: BorderSide(
           width: 1,
           color: AppColors.lighSecondaryText.withValues(alpha: 0.4),
         ),
       ),
       collapsedShape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(8)),
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
         side: BorderSide(
           width: 1,
           color: AppColors.lighSecondaryText.withValues(alpha: 0.4),

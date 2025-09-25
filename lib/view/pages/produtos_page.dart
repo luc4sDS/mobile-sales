@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/controller/produto_controller.dart';
 import 'package:mobile_sales/model/produto.dart';
-import 'package:mobile_sales/view/pages/produto_info_page.dart';
 import 'package:mobile_sales/view/widgets/loading_error.dart';
 import 'package:mobile_sales/view/widgets/main_options_button.dart';
 import 'package:mobile_sales/view/widgets/produto_card.dart';

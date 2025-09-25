@@ -211,38 +211,44 @@ class _AdicionarProdutoModalState extends State<AdicionarProdutoModal> {
                         )
                       ],
                     ),
-                    Row(
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      spacing: 10,
                       children: [
-                        Expanded(
-                          child: TextField(
-                            focusNode: _pesquisaFocusNode,
-                            onChanged: (_) => {
-                              setState(() {
-                                _produtosFuture = _produtoController
-                                    .getProdutos(_pesquisaCte.text,
-                                        tabela: tabela);
-                              })
-                            },
-                            controller: _pesquisaCte,
-                            decoration: const InputDecoration(
-                              label: Text('Pesquisa'),
-                              suffixIcon: Icon(Icons.search),
-                            ),
+                        TextField(
+                          focusNode: _pesquisaFocusNode,
+                          onChanged: (_) => {
+                            setState(() {
+                              _produtosFuture = _produtoController.getProdutos(
+                                  _pesquisaCte.text,
+                                  tabela: tabela);
+                            })
+                          },
+                          controller: _pesquisaCte,
+                          decoration: const InputDecoration(
+                            label: Text('Pesquisa'),
+                            suffixIcon: Icon(Icons.search),
                           ),
                         ),
-                        const SizedBox(
-                          width: 7,
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.fromLTRB(14, 5, 14, 5),
+                            minimumSize: const Size(10, 10),
+                            textStyle: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w500,
+                                fontFamily: 'poppins'),
+                          ),
+                          onPressed: handleAvulsoTap,
+                          child: const Text(
+                            'Avulso',
+                            style: TextStyle(fontSize: 16),
+                          ),
                         ),
-                        IconButton(
-                            style: const ButtonStyle(
-                                backgroundColor: WidgetStateProperty.fromMap(
-                                    {WidgetState.any: AppColors.primary})),
-                            onPressed: handleAvulsoTap,
-                            icon: const Icon(
-                              Icons.add,
-                              color: Colors.white,
-                            ))
                       ],
+                    ),
+                    const SizedBox(
+                      width: 7,
                     ),
                     loading
                         ? const Center(

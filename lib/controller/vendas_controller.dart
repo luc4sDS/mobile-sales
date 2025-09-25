@@ -2,12 +2,9 @@ import 'dart:math';
 
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
-import 'package:mobile_sales/controller/produto_st_controller.dart';
 import 'package:mobile_sales/controller/tabela_controller.dart';
-import 'package:mobile_sales/controller/vendas_itens_controllers.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/parametros.dart';
-import 'package:mobile_sales/model/produto_st.dart';
 import 'package:mobile_sales/model/ultimas_vendas.dart';
 import 'package:mobile_sales/model/venda.dart';
 import 'package:mobile_sales/model/venda_item.dart';
@@ -242,6 +239,8 @@ class VendasController {
         throw Exception('Erro ao gerar chave da venda');
       }
     }
+
+    return null;
   }
 
   Future<List<UltimasVendas>> getUltimasVendas(int prodId, String cliCnpj,

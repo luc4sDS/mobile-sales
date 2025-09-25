@@ -40,8 +40,10 @@ class _PedidosPageState extends State<PedidosPage> {
 
       if (novoPedido == null) {
         if (mounted) Navigator.of(context).pop();
-        Utils().customShowDialog(
-            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        if (mounted) {
+          Utils().customShowDialog(
+              'ERRO', 'Erro!', 'Não foi possivel criar novo pedido', context);
+        }
         return;
       } else {
         if (mounted) Navigator.of(context).pop();
@@ -62,9 +64,11 @@ class _PedidosPageState extends State<PedidosPage> {
         }
       }
     } catch (e) {
-      if (mounted) Navigator.of(context).pop();
-      Utils().customShowDialog(
-          'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+      if (mounted) {
+        Navigator.of(context).pop();
+        Utils().customShowDialog(
+            'ERRO', 'Erro!', 'Não foi possivel criar novo pedido: $e', context);
+      }
     }
   }
 

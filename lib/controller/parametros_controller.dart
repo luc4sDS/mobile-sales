@@ -3,7 +3,6 @@ import 'package:mobile_sales/constants/api_constants.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/parametros.dart';
 import 'package:http/http.dart' as http;
-import 'package:sqflite/sql.dart';
 
 class ParametrosController {
   Parametros? parametros;
@@ -29,13 +28,6 @@ class ParametrosController {
     } catch (e) {
       return 'Erro ao buscar parametros no banco de dados: $e';
     }
-  }
-
-  void teste() async {
-    final db = await DatabaseService().database;
-
-    List<dynamic> result = await db.query('PARAMETROS');
-    print(result);
   }
 
   Future<String> cadastrarUsuario(String usuario, senha) async {
@@ -72,8 +64,9 @@ class ParametrosController {
   }
 
   Future<String> atualizarDadosVendedor() async {
-    if (parametros == null || parametros!.parCusu == null)
+    if (parametros == null || parametros!.parCusu == null) {
       return 'Erro ao atualizar dados do vendedor.';
+    }
 
     var url = Uri.https(parametros!.parEndIPProd!, '/vendedores',
         {'codigo': parametros!.parCusu.toString(), 'chave': ''});
@@ -81,8 +74,9 @@ class ParametrosController {
 
     var resJson = json.decode(response.body);
 
-    if (parametros!.parVendNome!.isEmpty)
+    if (parametros!.parVendNome!.isEmpty) {
       return 'Vendedor inválido: nome não encontrado.';
+    }
 
     parametros!.parBloqueado = resJson[0]['VR_BLOQUEADO'];
     parametros!.parBonificacao = resJson[0]['VR_BONIFICACAO'];
@@ -136,13 +130,15 @@ class ParametrosController {
 
       var response = await http.get(url);
 
-      if (response.statusCode != 200)
+      if (response.statusCode != 200) {
         return 'Erro ao buscar parametros: (${response.statusCode}) ${response.body}';
+      }
 
       List<dynamic> resJson = json.decode(response.body);
 
-      if (resJson.isEmpty)
+      if (resJson.isEmpty) {
         return 'Não foi encontrada nenhuma empresa com este CNPJ.';
+      }
 
       parametros!.parCnpj = resJson[0]['cli_cnpj'];
       parametros!.parEndIPProd = resJson[0]['cli_mobilesaleshost'];
@@ -152,15 +148,17 @@ class ParametrosController {
 
       response = await http.get(url);
 
-      if (response.statusCode != 200)
+      if (response.statusCode != 200) {
         return 'Erro ao buscar dados do vendedor: (${response.statusCode}) ${response.body}';
+      }
 
       resJson = json.decode(response.body);
 
       if (resJson.isEmpty) return 'Não foi encontrado vendedor com esta chave.';
 
-      if (resJson[0]['VR_BLOQUEADO'] == 'S')
+      if (resJson[0]['VR_BLOQUEADO'] == 'S') {
         return 'Código de vendedor bloqueado.';
+      }
 
       parametros!.parChave = resJson[0]['VR_CHAVE'];
       parametros!.parCusu = resJson[0]['VR_ID'];

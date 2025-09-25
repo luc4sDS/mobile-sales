@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 
-enum MenuOption {
+enum PedidoMenuOption {
   pdf,
   enviar,
   cancelar,
@@ -11,7 +11,7 @@ enum MenuOption {
 
 class PedidoOptionsButton extends StatefulWidget {
   final String vndEnviado;
-  final Function(MenuOption) onSelect;
+  final Function(PedidoMenuOption) onSelect;
 
   const PedidoOptionsButton({
     super.key,
@@ -28,10 +28,10 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
   Widget build(BuildContext context) {
     return PopupMenuButton(
       onSelected: widget.onSelect,
-      itemBuilder: (context) => <PopupMenuEntry<MenuOption>>[
+      itemBuilder: (context) => <PopupMenuEntry<PedidoMenuOption>>[
         PopupMenuItem(
           enabled: widget.vndEnviado == 'N',
-          value: MenuOption.enviar,
+          value: PedidoMenuOption.enviar,
           child: const Row(
             spacing: 10,
             children: [
@@ -42,7 +42,7 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
         ),
         PopupMenuItem(
           enabled: widget.vndEnviado == 'N',
-          value: MenuOption.atualizarPrecos,
+          value: PedidoMenuOption.atualizarPrecos,
           child: const Row(
             spacing: 10,
             children: [
@@ -52,7 +52,7 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
           ),
         ),
         const PopupMenuItem(
-          value: MenuOption.email,
+          value: PedidoMenuOption.email,
           child: Row(
             spacing: 10,
             children: [
@@ -62,7 +62,7 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
           ),
         ),
         const PopupMenuItem(
-          value: MenuOption.pdf,
+          value: PedidoMenuOption.pdf,
           child: Row(
             spacing: 10,
             children: [
@@ -73,7 +73,7 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
         ),
         PopupMenuItem(
           enabled: widget.vndEnviado == 'N',
-          value: MenuOption.cancelar,
+          value: PedidoMenuOption.cancelar,
           child: const Row(
             spacing: 10,
             children: [

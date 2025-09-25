@@ -75,6 +75,16 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     return -1;
   }
 
+  void handleObsChange(String value) async {
+    _timer?.cancel();
+
+    _timer = Timer(const Duration(milliseconds: 300), () {
+      venda = venda.copyWith(vndObs: value);
+
+      _vendaController.salvarVenda(venda);
+    });
+  }
+
   void handleEmailChange() async {
     _timer?.cancel();
 
@@ -366,10 +376,52 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
-  void handleOptionsSelect(MenuOption option) async {
-    setState(() {
-      venda = venda.copyWith(vndEnviado: 'P');
-    });
+  void handleOptionsSelect(PedidoMenuOption option) async {
+    switch (option) {
+      case PedidoMenuOption.enviar:
+        print('Enviar');
+        break;
+      case PedidoMenuOption.atualizarPrecos:
+        print('atualizarPrecos');
+        break;
+      case PedidoMenuOption.email:
+        print('email');
+        break;
+      case PedidoMenuOption.pdf:
+        print('pdf');
+        break;
+      case PedidoMenuOption.cancelar:
+        Utils().customShowDialog(
+          'ALERTA',
+          'Confirmar',
+          'Deseja cancelar o pedido?',
+          context,
+          actions: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Sim'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Não'),
+            ),
+          ],
+        ).then((value) {
+          final result = value ?? false;
+
+          if (result) {
+            venda = venda.copyWith(vndEnviado: 'C');
+            _vendaController.salvarVenda(venda).then((_) {
+              setState(() {});
+            });
+          }
+        });
+        break;
+    }
   }
 
   @override
@@ -1110,6 +1162,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                           constraints: const BoxConstraints(
                                               maxHeight: 150, maxWidth: 600),
                                           child: CustomTextField(
+                                            onChanged: handleObsChange,
                                             enabled: venda.vndEnviado == 'N',
                                             maxLines: null,
                                             minLines: 10,

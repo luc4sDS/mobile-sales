@@ -19,7 +19,7 @@ class CustomCheckBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final aEnabled = this.enabled ?? true;
+    final aEnabled = enabled ?? true;
 
     return GestureDetector(
       onTap: aEnabled ? onTap : null,
