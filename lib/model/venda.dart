@@ -354,6 +354,52 @@ class Venda {
     };
   }
 
+  Map<String, dynamic> toMapAPI(String situacao) {
+    return {
+      'VND_ID': vndId,
+      'VND_CHAVE': vndChave,
+      'VND_DATAHORA': DateFormat('MM-dd-yyyy hh:mm:ss').format(DateTime.now()),
+      'VND_PREVENT': DateFormat('MM-dd-yyyy').format(DateTime.now()),
+      'VND_VEND': vndVend,
+      'VND_VENDNOME': vndVendNome,
+      'VND_CLI_CODIGO': vndCliCod,
+      'VND_CLI_NOME': vndCliNome,
+      'VND_FORMAPAGTO': vndFormaPagto,
+      'VND_FORMANOME': vndFormaNome,
+      'VND_MEIO': vndMeio,
+      'VND_MEIONOME': vndMeioNome,
+      'VND_VALOR': double.parse(vndValor.toStringAsFixed(2)),
+      'VND_DESCONTO': double.parse(vndDesconto.toStringAsFixed(2)),
+      'VND_FRETE': double.parse(vndFrete.toStringAsFixed(2)),
+      'VND_TOTALST': double.parse(vndTotalSt.toStringAsFixed(2)),
+      'VND_TOTALIPI': double.parse(vndTotalIpi.toStringAsFixed(2)),
+      'VND_TOTAL': double.parse(vndTotal.toStringAsFixed(2)),
+      'VND_OBD;': vndObs,
+      'VND_SITUACAO': situacao,
+      'VND_PESO': double.parse(vndPeso.toStringAsFixed(2)),
+      'VND_ENTREGA': vndEntrega,
+      'VND_NENTREGA': vndNEntrega,
+      'VND_LATITUDE': null,
+      'VND_LONGITUDE': null,
+      'VND_TABELA': vndTabela,
+      'VND_UF': vndUf,
+      'VND_ENDERECOENT': vndEnderecoEnt,
+      'VND_BAIRROENT': vndBairroEnt,
+      'VND_CIDADEENT': vndNumeroEnt,
+      'VND_ESTADOENT': vndEstadoEnt,
+      'VND_CEPENT': vndCepEnt,
+      'VND_COMPLENT': vndComplEnt,
+      'VND_CLI_CNPJ': vndCliCnpj,
+      'VND_EMAIL': vndEmail,
+      'VND_TOTALBONIFICACAO':
+          double.parse(vndTotalBonificacao.toStringAsFixed(2)),
+      'VND_SALDOBONIFICACAO':
+          double.parse(vndSaldoBonificacao.toStringAsFixed(2)),
+      'VND_PARCELAS': vndParcelas,
+      'ITENS': itens.map((item) => item.toMapAPI()).toList(),
+    };
+  }
+
   Venda copyWith({
     int? vndId,
     String? vndChave,

@@ -11,7 +11,7 @@ import 'package:mobile_sales/model/produto.dart';
 import 'package:mobile_sales/model/ultimas_vendas.dart';
 import 'package:mobile_sales/model/venda_item.dart';
 import 'package:mobile_sales/utils/utils.dart';
-import 'package:mobile_sales/view/widgets/CustomCheckBox.dart';
+import 'package:mobile_sales/view/widgets/custom_check_box.dart';
 import 'package:mobile_sales/view/widgets/custom_text_field.dart';
 import 'package:mobile_sales/view/widgets/ultima_venda_card.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';

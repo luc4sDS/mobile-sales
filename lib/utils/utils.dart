@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/view/widgets/alert_dialog.dart';
 
 class Utils {
@@ -39,6 +40,48 @@ class Utils {
                   child: const Text('OK'),
                 ),
               ],
+        );
+      },
+    );
+  }
+
+  void showLoadingDialog(BuildContext context, String content) {
+    showDialog(
+      barrierDismissible: false,
+      context: context,
+      builder: (context) {
+        return PopScope(
+          canPop: false,
+          child: Scaffold(
+            backgroundColor: Colors.transparent,
+            body: AlertDialog(
+              backgroundColor: AppColors.lightBackground,
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 20, // Padding igual em cima e embaixo
+              ),
+              content: Row(
+                spacing: 30,
+                children: [
+                  const SizedBox(
+                    height: 40,
+                    width: 40,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 5,
+                    ),
+                  ),
+                  Expanded(
+                    child: Text(
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.w500),
+                      content,
+                      overflow: TextOverflow.clip,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );

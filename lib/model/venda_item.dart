@@ -160,6 +160,35 @@ class VendaItem {
     };
   }
 
+  Map<String, dynamic> toMapAPI() {
+    return {
+      'VDI_VND_ID': vdiVndId,
+      'VDI_VND_CHAVE': vdiVndChave,
+      'VDI_EAN': vdiEan,
+      'VDI_PROD_COD': vdiProdCod,
+      'VDI_DESCRICAO': vdiDescricao,
+      'VDI_QTD': double.parse(vdiQtd.toStringAsFixed(2)),
+      'VDI_UNIT': double.parse(vdiUnit.toStringAsFixed(2)),
+      'VDI_TOTAL': double.parse(vdiTotal.toStringAsFixed(2)),
+      'VDI_DESC': double.parse(vdiDesc.toStringAsFixed(2)),
+      'VDI_ALST': double.parse((vdiAlinter - vdiAlintra).toStringAsFixed(2)),
+      'VDI_ALIPI': double.parse(vdiAlipi.toStringAsFixed(2)),
+      'VDI_MVA': double.parse(vdiMva.toStringAsFixed(2)),
+      'VDI_REDBASE': double.parse(vdiRedbase.toStringAsFixed(2)),
+      'VDI_VLST': double.parse(vdiVlst.toStringAsFixed(2)),
+      'VDI_VLIPI': double.parse(vdiVlipi.toStringAsFixed(2)),
+      'VDI_TOTALG': double.parse(vdiTotalg.toStringAsFixed(2)),
+      'VDI_PRECO': double.parse(vdiPreco.toStringAsFixed(2)),
+      'VDI_CUSTO': double.parse(vdiCusto.toStringAsFixed(2)),
+      'VDI_BONIFICADO': vdiBonificado ? 'True' : 'False',
+      'VDI_PBONIFICACAO': double.parse(vdiPbonificacao.toStringAsFixed(2)),
+      'VDI_VBONIFICACAO': double.parse(vdiPbonificacao.toStringAsFixed(2)),
+      'VDI_PMIN': double.parse(vdiPmin.toStringAsFixed(2)),
+      'VDI_LANCE': vdiLance,
+      'VDI_OBS': vdiObs,
+    };
+  }
+
   VendaItem copyWith({
     int? vdiId,
     int? vdiVndId,

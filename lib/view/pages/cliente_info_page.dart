@@ -465,7 +465,7 @@ class _ClienteInfoPageState extends State<ClienteInfoPage> {
         );
 
         if (shouldPop == true && mounted) {
-          if (mounted) Navigator.of(context).pop();
+          Navigator.of(context).pop();
         }
       },
       child: Scaffold(

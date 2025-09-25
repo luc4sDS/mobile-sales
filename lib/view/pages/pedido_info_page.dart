@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_sales/controller/forma_pagamento_controller.dart';
@@ -362,6 +364,87 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
+  void handleEnviar() {
+    Utils().customShowDialog(
+      'CONFIRMAR',
+      'Confirmar',
+      'Deseja enviar o pedido?',
+      context,
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          },
+          child: const Text('Sim'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(false);
+          },
+          child: const Text('Não'),
+        ),
+      ],
+    ).then((value) async {
+      if (value ?? false) return;
+
+      if (mounted) Utils().showLoadingDialog(context, 'Enviando Pedido');
+
+      final result = await _vendaController.enviarVenda(venda).then((_) {
+        if (mounted) Navigator.of(context).pop();
+      });
+
+      if (result.isNotEmpty) {
+        if (mounted) {
+          Utils().customShowDialog(
+              'ERRO', 'Erro ao enviar pedido', result, context);
+        }
+        return;
+      }
+
+      venda = venda.copyWith(vndEnviado: 'P');
+
+      _vendaController.salvarVenda(venda).then((_) {
+        setState(() {});
+        if (mounted) {
+          Utils().customShowDialog(
+              'OK', 'Pedido enviado com sucesso!', '', context);
+        }
+      });
+    });
+  }
+
+  void handleCancelar() {
+    Utils().customShowDialog(
+      'ALERTA',
+      'Confirmar',
+      'Deseja cancelar o pedido?',
+      context,
+      actions: [
+        ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).pop(true);
+          },
+          child: const Text('Sim'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop(false);
+          },
+          child: const Text('Não'),
+        ),
+      ],
+    ).then((value) {
+      final result = value ?? false;
+
+      if (result) {
+        venda = venda.copyWith(vndEnviado: 'C');
+        _vendaController.salvarVenda(venda).then((_) {
+          setState(() {});
+        });
+      }
+    });
+  }
+
   void handleTabelaChange(String text) {
     _timer?.cancel();
 
@@ -379,47 +462,25 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
   void handleOptionsSelect(PedidoMenuOption option) async {
     switch (option) {
       case PedidoMenuOption.enviar:
-        print('Enviar');
+        handleEnviar();
+
         break;
+
       case PedidoMenuOption.atualizarPrecos:
         print('atualizarPrecos');
         break;
+
       case PedidoMenuOption.email:
         print('email');
         break;
+
       case PedidoMenuOption.pdf:
         print('pdf');
         break;
-      case PedidoMenuOption.cancelar:
-        Utils().customShowDialog(
-          'ALERTA',
-          'Confirmar',
-          'Deseja cancelar o pedido?',
-          context,
-          actions: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop(true);
-              },
-              child: const Text('Sim'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(false);
-              },
-              child: const Text('Não'),
-            ),
-          ],
-        ).then((value) {
-          final result = value ?? false;
 
-          if (result) {
-            venda = venda.copyWith(vndEnviado: 'C');
-            _vendaController.salvarVenda(venda).then((_) {
-              setState(() {});
-            });
-          }
-        });
+      case PedidoMenuOption.cancelar:
+        handleCancelar();
+
         break;
     }
   }

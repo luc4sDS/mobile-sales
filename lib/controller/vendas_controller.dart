@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
 import 'package:mobile_sales/controller/tabela_controller.dart';
@@ -241,6 +242,75 @@ class VendasController {
     }
 
     return null;
+  }
+
+  Future<String> enviarVenda(Venda venda) async {
+    final parametrosController = ParametrosController();
+    await parametrosController.getParametros();
+
+    if (venda.vndEnviado == 'S') {
+      return '';
+    }
+
+    final dio = Dio();
+
+    try {
+      final res = await dio.put(
+        'https://${parametrosController.parametros?.parEndIPProd ?? ''}/vendas',
+        data: venda.toMapAPI('A'),
+      );
+
+      if ((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) <= 210) {
+        if (res.data is Map<String, dynamic>) {
+          final result = res.data as Map<String, dynamic>;
+
+          if (result['status'] == 100) {
+            if (await buscarPedido(venda.vndChave ?? '')) {
+              return '';
+            } else {
+              return 'Erro desconhecido';
+            }
+          } else {
+            return result['motivo'];
+          }
+        } else {
+          return 'Não foi possível converter a resposta do servidor';
+        }
+      } else {
+        return 'Status Code: ${res.statusCode} \n\n ${res.data}';
+      }
+
+      return '';
+    } catch (e) {
+      return '$e';
+    }
+  }
+
+  Future<bool> buscarPedido(String chave) async {
+    final dio = Dio();
+    final parCtr = ParametrosController();
+    await parCtr.getParametros();
+
+    final res = await dio.get(
+      'https://${parCtr.parametros?.parEndIPProd ?? ''}/vendas',
+      queryParameters: {'chave': chave},
+    );
+
+    if ((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) <= 210) {
+      if (res.data is Map<String, dynamic>) {
+        final result = res.data as Map<String, dynamic>;
+
+        if (chave == result['VND_CHAVE']) {
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
   }
 
   Future<List<UltimasVendas>> getUltimasVendas(int prodId, String cliCnpj,
