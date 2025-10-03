@@ -1,6 +1,5 @@
 import 'dart:async';
-import 'dart:io';
-
+import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -28,6 +27,9 @@ import 'package:mobile_sales/view/widgets/pedido_options_button.dart';
 import 'package:mobile_sales/view/widgets/valor_card.dart';
 import 'package:mobile_sales/view/widgets/venda_item_card.dart';
 import 'package:mobile_sales/view/widgets/venda_situacao_chip.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 
 class PedidoInfoPage extends StatefulWidget {
   final Venda venda;
@@ -288,6 +290,38 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     }
   }
 
+  List<String> validarVenda(Venda v, [bool validaEmail = false]) {
+    List<String> erros = [];
+
+    if (validaEmail) {
+      if (!(venda.vndEmail?.trim().contains('@') ?? false)) {
+        erros.add('Email inválido');
+      }
+    }
+
+    if ((venda.vndFormaNome ?? 0) == 0) {
+      erros.add('Informe a Forma de Pagamento');
+    }
+
+    if ((venda.vndEntrega ?? 0) == 0) {
+      erros.add('Informe o Tipo de Entrega');
+    }
+
+    if (venda.itens.isEmpty) {
+      erros.add('O Pedido deve conter produtos');
+    }
+
+    if (venda.vndTotalBonificacao < venda.vndSaldoBonificacao) {
+      erros.add('Total de bonificação maior que o saldo disponível');
+    }
+
+    if ((venda.vndChave ?? '').isEmpty) {
+      erros.add('Não foi gerada uma chave para este pedido');
+    }
+
+    return erros;
+  }
+
   void handleInitState() async {
     setState(() {
       loading = true;
@@ -305,13 +339,13 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
 
     await _parametrosController.getParametros();
     _formasPagamento = await _formaPagamentoController.getAll();
-    _meiosPagamento = await _meioPagamentoController.getAll();
+    // _meiosPagamento = await _meioPagamentoController.getAll();
     _tiposEntrega = await _tipoEntregaController.getAll();
 
     _selectedFormaPagamento = getIndexByFieldValue<FormaPagamento, int>(
         _formasPagamento, (e) => e.fpId, venda.vndFormaPagto ?? 0);
-    _selectedMeioPagamento = getIndexByFieldValue<MeioPagamento, int>(
-        _meiosPagamento, (e) => e.mpId, venda.vndMeio ?? -1);
+    // _selectedMeioPagamento = getIndexByFieldValue<MeioPagamento, int>(
+    //     _meiosPagamento, (e) => e.mpId, venda.vndMeio ?? -1);
     _selectedTipoEntrega = getIndexByFieldValue<TipoEntrega, int>(
         _tiposEntrega, (e) => e.tpId, venda.vndEntrega ?? 0);
 
@@ -364,7 +398,21 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
     });
   }
 
-  void handleEnviar() {
+  void handleEnviar() async {
+    if (!(await Utils.internet())) {
+      if (mounted) {
+        Utils().customShowDialog(
+          'ERRO',
+          'Erro ao enviar o pedido',
+          'O aparelho não possui conexão com a internet',
+          context,
+        );
+      }
+      return;
+    }
+
+    if (!mounted) return;
+
     Utils().customShowDialog(
       'CONFIRMAR',
       'Confirmar',
@@ -412,6 +460,218 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
         }
       });
     });
+  }
+
+  void handleAtualizarPrecos() async {
+    _vendaController.atualizarPrecos(venda).then((novaVenda) {
+      setState(() {
+        venda = novaVenda;
+      });
+    });
+  }
+
+  void handleGerarPdf() async {
+    if (!(await Utils().requestPermissions())) {
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro ao gerar PDF', 'Permissões não concedidas', context);
+      }
+
+      return;
+    }
+
+    if (!(await Utils.internet())) {
+      if (mounted) {
+        Utils().customShowDialog('ERRO', 'Erro ao gerar PDF',
+            'O aparelho não possui conexão com a internet', context);
+      }
+      return;
+    }
+
+    final erros = validarVenda(venda);
+    final dio = Dio(
+      BaseOptions(
+        baseUrl:
+            'https://${_parametrosController.parametros?.parEndIPProd ?? ''}',
+        contentType: 'application/json',
+      ),
+    );
+
+    if (erros.isNotEmpty) {
+      if (mounted) {
+        Utils().customShowDialog(
+            'ERRO', 'Erro ao gerar o PDF', erros.join('\n\n'), context);
+      }
+      return;
+    }
+
+    try {
+      if (!mounted) return;
+
+      Utils().showLoadingDialog(context, 'Baixando PDF');
+
+      final docsDir = await getApplicationDocumentsDirectory();
+      final savePath = '${docsDir.path}/${venda.vndChave}.pdf';
+
+      final json = [venda.toMapAPI('A')];
+
+      final teste = jsonEncode(json);
+
+      final res = await dio.put(
+        '/pdf',
+        data: json,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      if (!((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) <= 210)) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog('ERRO', 'Erro ao gerar PDF',
+              '${res.statusCode} - ${res.data}', context);
+        }
+
+        return;
+      }
+
+      if (res.data is! Map<String, dynamic>) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog('ERRO', 'Erro ao Gerar PDF',
+              'Não foi possível converter a resposta do servidor', context);
+        }
+
+        return;
+      }
+
+      if (res.data['status'] != 100) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog(
+              'ERRO', 'Erro ao Gerar PDF', '${res.data['motivo']}', context);
+        }
+
+        return;
+      }
+
+      await dio.download(
+        res.data['Arquivo'],
+        savePath,
+      );
+
+      // await OpenFilex.open(savePath);
+
+      final params = ShareParams(
+        files: [
+          XFile(savePath),
+        ],
+      );
+
+      await SharePlus.instance.share(params);
+
+      if (mounted) Navigator.of(context).pop();
+    } catch (e) {
+      if (mounted) {
+        if (e is DioException) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog(
+            'ERRO',
+            'Erro ao gerar PDF',
+            '${e.response?.statusCode} - ${e.response?.data}',
+            context,
+          );
+        } else {
+          Navigator.of(context).pop();
+          Utils().customShowDialog('ERRO', 'Erro ao gerar PDF', '$e', context);
+        }
+      }
+    }
+  }
+
+  void handleEnviarEmail() async {
+    final erros = validarVenda(venda, true);
+
+    if (erros.isNotEmpty) {
+      Utils().customShowDialog(
+          'ERRO', 'Erro ao enviar email', erros.join('\n\n'), context);
+
+      return;
+    }
+
+    final dio = Dio(
+      BaseOptions(
+        baseUrl:
+            'https://${_parametrosController.parametros?.parEndIPProd ?? ''}',
+        contentType: 'application/json',
+      ),
+    );
+
+    try {
+      Utils().showLoadingDialog(context, 'Enviando email');
+
+      final json = [venda.toMapAPI('A')];
+
+      final res = await dio.put(
+        '/email_sender',
+        data: json,
+        options: Options(contentType: 'application/json'),
+      );
+
+      if (!((res.statusCode ?? 0) >= 200 && (res.statusCode ?? 0) <= 210)) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog('ERRO', 'Erro ao enviar email',
+              '${res.statusCode} - ${res.data}', context);
+        }
+
+        return;
+      }
+
+      if (res.data is! Map<String, dynamic>) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog('ERRO', 'Erro ao enviar email',
+              'Não foi possível converter a resposta do servidor', context);
+        }
+
+        return;
+      }
+
+      if (res.data['status'] != 100) {
+        if (mounted) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog(
+              'ERRO', 'Erro ao enviar email', '${res.data['motivo']}', context);
+        }
+
+        return;
+      }
+
+      if (mounted) {
+        Navigator.of(context).pop();
+        Utils()
+            .customShowDialog('OK', 'Email enviado com sucesso!', '', context);
+      }
+    } catch (e) {
+      if (mounted) {
+        if (e is DioException) {
+          Navigator.of(context).pop();
+          Utils().customShowDialog(
+            'ERRO',
+            'Erro ao enviar email',
+            '${e.response?.statusCode} - ${e.response?.data}',
+            context,
+          );
+        } else {
+          Navigator.of(context).pop();
+          Utils()
+              .customShowDialog('ERRO', 'Erro ao enviar email', '$e', context);
+        }
+      }
+    }
   }
 
   void handleCancelar() {
@@ -468,20 +728,19 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
         break;
 
       case PedidoMenuOption.atualizarPrecos:
-        print('atualizarPrecos');
+        handleAtualizarPrecos();
         break;
 
       case PedidoMenuOption.email:
-        print('email');
+        handleEnviarEmail();
         break;
 
       case PedidoMenuOption.pdf:
-        print('pdf');
+        handleGerarPdf();
         break;
 
       case PedidoMenuOption.cancelar:
         handleCancelar();
-
         break;
     }
   }
@@ -784,7 +1043,7 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                               extractName: (e) => e.fpDesc,
                                               selectedIndex:
                                                   _selectedFormaPagamento,
-                                              onSelect: (index) {
+                                              onSelect: (index) async {
                                                 venda = venda.copyWith(
                                                   vndFormaNome:
                                                       _formasPagamento[index]
@@ -792,14 +1051,24 @@ class _PedidoInfoPageState extends State<PedidoInfoPage> {
                                                   vndFormaPagto:
                                                       _formasPagamento[index]
                                                           .fpId,
+                                                  vndMeioNome: null,
+                                                  vndMeio: null,
                                                 );
 
                                                 _vendaController
                                                     .salvarVenda(venda);
 
-                                                setState(() {
-                                                  _selectedFormaPagamento =
-                                                      index;
+                                                _meioPagamentoController
+                                                    .getMeios(
+                                                        _formasPagamento[index]
+                                                            .fpId)
+                                                    .then((value) {
+                                                  setState(() {
+                                                    _selectedFormaPagamento =
+                                                        index;
+                                                    _selectedMeioPagamento = -1;
+                                                    _meiosPagamento = value;
+                                                  });
                                                 });
                                               },
                                             ),

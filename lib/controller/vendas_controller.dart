@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:mobile_sales/controller/cliente_controller.dart';
 import 'package:mobile_sales/controller/parametros_controller.dart';
+import 'package:mobile_sales/controller/produto_controller.dart';
 import 'package:mobile_sales/controller/tabela_controller.dart';
 import 'package:mobile_sales/database/database_services.dart';
 import 'package:mobile_sales/model/parametros.dart';
@@ -244,6 +245,42 @@ class VendasController {
     return null;
   }
 
+  Future<Venda> atualizarPrecos(Venda venda) async {
+    final produtoCtr = ProdutoController();
+    final vendaCtr = VendasController();
+
+    final itens = venda.itens;
+
+    for (var i = 0; i < itens.length; i++) {
+      final produto = await produtoCtr.getProdutoById(
+          itens[i].vdiProdCod, venda.vndTabela ?? 0);
+
+      if (produto == null || produto.prodPreco <= itens[i].vdiPreco) {
+        continue;
+      }
+
+      final unitario = (produto.prodPreco) - itens[i].vdiDesc;
+
+      itens[i] = itens[i].copyWith(
+        vdiPreco: produto.prodPreco,
+        vdiUnit: unitario,
+        vdiTotal: unitario * itens[i].vdiQtd,
+        vdiPbonificacao: produto.prodPbonificacao,
+        vdiVbonificacao: (produto.prodPbonificacao ?? 0) > 0
+            ? itens[i].vdiTotal * ((produto.prodPbonificacao ?? 0) / 100)
+            : 0,
+      );
+    }
+
+    final novaVenda = vendaCtr.totalizar(venda.copyWith(itens: itens));
+
+    if ((await vendaCtr.salvarVenda(novaVenda)) > 0) {
+      return novaVenda;
+    } else {
+      return venda;
+    }
+  }
+
   Future<String> enviarVenda(Venda venda) async {
     final parametrosController = ParametrosController();
     await parametrosController.getParametros();
@@ -279,8 +316,6 @@ class VendasController {
       } else {
         return 'Status Code: ${res.statusCode} \n\n ${res.data}';
       }
-
-      return '';
     } catch (e) {
       return '$e';
     }

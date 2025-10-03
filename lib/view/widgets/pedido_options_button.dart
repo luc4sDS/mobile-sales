@@ -51,9 +51,10 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
+          enabled: widget.vndEnviado != 'C',
           value: PedidoMenuOption.email,
-          child: Row(
+          child: const Row(
             spacing: 10,
             children: [
               Icon(Icons.email),
@@ -61,9 +62,10 @@ class _PedidoOptionsButtonState extends State<PedidoOptionsButton> {
             ],
           ),
         ),
-        const PopupMenuItem(
+        PopupMenuItem(
+          enabled: widget.vndEnviado != 'C',
           value: PedidoMenuOption.pdf,
-          child: Row(
+          child: const Row(
             spacing: 10,
             children: [
               Icon(Icons.description),

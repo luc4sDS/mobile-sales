@@ -1,2 +1,0 @@
-C:/Lucas/Code/flutter/mobile_sales/android/app/.cxx/RelWithDebInfo/1947b146/x86_64/CMakeFiles/edit_cache.dir
-C:/Lucas/Code/flutter/mobile_sales/android/app/.cxx/RelWithDebInfo/1947b146/x86_64/CMakeFiles/rebuild_cache.dir

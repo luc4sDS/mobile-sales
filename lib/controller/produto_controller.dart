@@ -29,14 +29,17 @@ class ProdutoController {
     return res.map((e) => Produto.fromMap(e)).toList();
   }
 
-  Future<Produto?> getProdutoById(int id) async {
+  Future<Produto?> getProdutoById(int id, [int tabela = 0]) async {
     final db = await DatabaseService().database;
 
-    final res = await db.query(
-      'PRODUTOS',
-      where: 'PROD_ID = ?',
-      whereArgs: [id],
-    );
+    final res = await db.rawQuery('''
+      SELECT PROD_ID, PROD_DESCRICAO, PROD_PRECO*(1+COALESCE(TB_PERCENT, 0)/100) PROD_PRECO, PROD_CBARRA, PROD_GRUPO, PROD_SUBGRUPO,
+        PROD_MARCA, PROD_BONIFICA, PROD_IMG, PROD_COR, PROD_DEVOLVE, PROD_ATIVO, PROD_DESCRICAOTEC, 
+        PROD_EMBALAGEM, PROD_SALDO, PROD_PBONIFICACAO, PROD_CORTE, PROD_PMIN, PROD_LIMDESC
+      FROM PRODUTOS LEFT JOIN TABELA_PRECO ON
+        TB_PROD=PROD_ID AND TB_ID = ?
+      WHERE PROD_ID = ?
+    ''', [tabela, id]);
 
     if (res.length == 1) {
       return Produto.fromMap(res[0]);

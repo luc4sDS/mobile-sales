@@ -163,8 +163,8 @@ class VendaItem {
   Map<String, dynamic> toMapAPI() {
     return {
       'VDI_VND_ID': vdiVndId,
-      'VDI_VND_CHAVE': vdiVndChave,
-      'VDI_EAN': vdiEan,
+      'VDI_VND_CHAVE': vdiVndChave ?? '',
+      'VDI_EAN': vdiEan ?? '',
       'VDI_PROD_COD': vdiProdCod,
       'VDI_DESCRICAO': vdiDescricao,
       'VDI_QTD': double.parse(vdiQtd.toStringAsFixed(2)),
@@ -179,13 +179,14 @@ class VendaItem {
       'VDI_VLIPI': double.parse(vdiVlipi.toStringAsFixed(2)),
       'VDI_TOTALG': double.parse(vdiTotalg.toStringAsFixed(2)),
       'VDI_PRECO': double.parse(vdiPreco.toStringAsFixed(2)),
+      'VDI_PESO': double.parse(vdiPeso.toStringAsFixed(2)),
       'VDI_CUSTO': double.parse(vdiCusto.toStringAsFixed(2)),
       'VDI_BONIFICADO': vdiBonificado ? 'True' : 'False',
       'VDI_PBONIFICACAO': double.parse(vdiPbonificacao.toStringAsFixed(2)),
       'VDI_VBONIFICACAO': double.parse(vdiPbonificacao.toStringAsFixed(2)),
       'VDI_PMIN': double.parse(vdiPmin.toStringAsFixed(2)),
       'VDI_LANCE': vdiLance,
-      'VDI_OBS': vdiObs,
+      'VDI_OBS': vdiObs ?? '',
     };
   }
 

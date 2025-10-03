@@ -1,1 +1,0 @@
-C:\Lucas\Code\flutter\mobile_sales\build\app\intermediates\cxx\RelWithDebInfo\1947b146\obj\x86_64

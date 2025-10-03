@@ -374,7 +374,7 @@ class Venda {
       'VND_TOTALST': double.parse(vndTotalSt.toStringAsFixed(2)),
       'VND_TOTALIPI': double.parse(vndTotalIpi.toStringAsFixed(2)),
       'VND_TOTAL': double.parse(vndTotal.toStringAsFixed(2)),
-      'VND_OBD;': vndObs,
+      'VND_OBS': vndObs ?? '',
       'VND_SITUACAO': situacao,
       'VND_PESO': double.parse(vndPeso.toStringAsFixed(2)),
       'VND_ENTREGA': vndEntrega,
@@ -385,7 +385,7 @@ class Venda {
       'VND_UF': vndUf,
       'VND_ENDERECOENT': vndEnderecoEnt,
       'VND_BAIRROENT': vndBairroEnt,
-      'VND_CIDADEENT': vndNumeroEnt,
+      'VND_CIDADEENT': vndCidadeEnt,
       'VND_ESTADOENT': vndEstadoEnt,
       'VND_CEPENT': vndCepEnt,
       'VND_COMPLENT': vndComplEnt,
@@ -395,7 +395,7 @@ class Venda {
           double.parse(vndTotalBonificacao.toStringAsFixed(2)),
       'VND_SALDOBONIFICACAO':
           double.parse(vndSaldoBonificacao.toStringAsFixed(2)),
-      'VND_PARCELAS': vndParcelas,
+      'VND_PARCELAS': vndParcelas.toString(),
       'ITENS': itens.map((item) => item.toMapAPI()).toList(),
     };
   }

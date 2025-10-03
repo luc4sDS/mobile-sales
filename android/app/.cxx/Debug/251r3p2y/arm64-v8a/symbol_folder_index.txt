@@ -1,1 +1,0 @@
-C:\Lucas\Code\flutter\mobile_sales\build\app\intermediates\cxx\Debug\251r3p2y\obj\arm64-v8a

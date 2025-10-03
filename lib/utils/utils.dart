@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_sales/core/configs/theme/app_colors.dart';
 import 'package:mobile_sales/view/widgets/alert_dialog.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 class Utils {
   static Future<bool> internet() async {
@@ -16,6 +17,17 @@ class Utils {
     } on SocketException catch (_) {
       return false;
     }
+  }
+
+  Future<bool> requestPermissions() async {
+    if (await Permission.manageExternalStorage.isDenied) {
+      if (await Permission.manageExternalStorage.request().isGranted) {
+        return true;
+      } else {
+        return false;
+      }
+    }
+    return true;
   }
 
   Future<bool?> customShowDialog(
